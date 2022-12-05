@@ -1,0 +1,18 @@
+Stack = 000000000065ED00
+Chech status = 2108
+At size_t ChangeStackData(Stack*, size_t) in C:/Users/Yan/Projects/CPU/Libs/Stack.h(414)
+Negative or poison size
+Negative or poison capacity
+Size is bigger then capacity
+Pointer to stack.data = nullptr
+Bebug info from stack damaged
+
+Stack = 000000000065ED58
+Chech status = 2108
+At size_t ChangeStackData(Stack*, size_t) in C:/Users/Yan/Projects/CPU/Libs/Stack.h(414)
+Negative or poison size
+Negative or poison capacity
+Size is bigger then capacity
+Pointer to stack.data = nullptr
+Bebug info from stack damaged
+
