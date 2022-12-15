@@ -16,6 +16,12 @@ enum NODE_TYPES
     TYPE_KEYWORD    = 5,
 };
 
+enum KEYWORD_TYPES
+{
+    UNDEF_KEYWORD_TYPE = 0,
+    KEYWORD_VAR        = 1,
+};
+
 enum OPER_TYPES
 {
     UNDEF_OPER_TYPE = 0,
@@ -43,11 +49,11 @@ struct Node_t
     NODE_TYPES type = UNDEF_NODE_TYPE;
     union
     {
-        int         symb = 0;
-        double      dbl;
-        OPER_TYPES  op;
-        char*       var;
-        char*       keyword;
+        int           symb = 0;
+        double        dbl;
+        OPER_TYPES    op;
+        char*         var;
+        KEYWORD_TYPES keyword;
     } val;
     size_t number_cmp_in_text = 0;
 };
@@ -56,6 +62,12 @@ struct Operator_t
 {
     const char*      name = "";
     const OPER_TYPES code = UNDEF_OPER_TYPE; 
+};
+
+struct Keyword_t
+{
+    const char* name = "";
+    const KEYWORD_TYPES code = UNDEF_KEYWORD_TYPE;
 };
 
 const int MAX_VAR_SIZE      = 20;
@@ -70,9 +82,20 @@ const Operator_t STD_OPERATORS[] = {
                                     {"^", OP_POW},
                                    };
 
+const int KEYWORDS_NUM = 1;
+
+const Keyword_t KEYWORDS[] = {
+                                {"var", KEYWORD_VAR},
+                             };
 
 void PrintElemInLog(Node_t elem);
 
 #include "BinaryTree/BinaryTree.h"
+
+struct Program_t 
+{
+    Node*  comands     = nullptr;;
+    size_t comands_num = 0;
+};
 
 #endif

@@ -3,6 +3,6 @@
 
 #include "../Setup.h"
 
-Node* GetProgramFromFile(const char* program_file_name, int* program_size);
+Node* GetProgramFromFile(const char* program_file_name, size_t* program_size);
 
 #endif //__SYM_LEXICAL_ANAL__

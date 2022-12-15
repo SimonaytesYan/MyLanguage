@@ -7,6 +7,6 @@ struct Function_t
     const OPER_TYPES code = UNDEF_OPER_TYPE; 
 };
 
-int  MakeTreeFromComands(Tree* tree, Node* program);
+int  MakeTreeFromComands(Tree* tree, Node* program, size_t comand_num);
 
 Node* GetNodeFromComands(Node* program);

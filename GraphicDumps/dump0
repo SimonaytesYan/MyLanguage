@@ -2,9 +2,21 @@ digraph G{
 node[shape = record, fontsize = 14];
 splines = ortho
 info[label = "root = 0x000040"]
-Node000040[style = "filled,rounded", fillcolor = "#B1FF9F", label = "{<i>000040 \n | { <v>VAR | var } | { <l> 000000  |<r>  000068}}"]
+Node000040[style = "filled,rounded", fillcolor = "#B1FF9F", label = "{<i>000040 \n | { <v>KEYWORD | 1} | { <l> 000000  |<r>  000068}}"]
 Node000040 -> Node000068[xlabel = "R"]
 Node000068[style = "filled,rounded", fillcolor = "#B1FF9F", label = "{<i>000068 \n | { <v>VAR | x } | { <l> 000000  |<r>  000090}}"]
 Node000068 -> Node000090[xlabel = "R"]
-Node000090[style = "filled,rounded", fillcolor = "#B1FF9F", label = "{<i>000090 \n | { <v>SYMB | [;]59} | { <l> 000000  |<r>  000000}}"]
+Node000090[style = "filled,rounded", fillcolor = "#B1FF9F", label = "{<i>000090 \n | { <v>SYMB | [;]59} | { <l> 000000  |<r>  0000B8}}"]
+Node000090 -> Node0000B8[xlabel = "R"]
+Node0000B8[style = "filled,rounded", fillcolor = "#B1FF9F", label = "{<i>0000B8 \n | { <v>KEYWORD | 1} | { <l> 000000  |<r>  0000E0}}"]
+Node0000B8 -> Node0000E0[xlabel = "R"]
+Node0000E0[style = "filled,rounded", fillcolor = "#B1FF9F", label = "{<i>0000E0 \n | { <v>VAR | x } | { <l> 000000  |<r>  000108}}"]
+Node0000E0 -> Node000108[xlabel = "R"]
+Node000108[style = "filled,rounded", fillcolor = "#B1FF9F", label = "{<i>000108 \n | { <v>SYMB | [;]59} | { <l> 000000  |<r>  000130}}"]
+Node000108 -> Node000130[xlabel = "R"]
+Node000130[style = "filled,rounded", fillcolor = "#B1FF9F", label = "{<i>000130 \n | { <v>KEYWORD | 1} | { <l> 000000  |<r>  000158}}"]
+Node000130 -> Node000158[xlabel = "R"]
+Node000158[style = "filled,rounded", fillcolor = "#B1FF9F", label = "{<i>000158 \n | { <v>VAR | x } | { <l> 000000  |<r>  000180}}"]
+Node000158 -> Node000180[xlabel = "R"]
+Node000180[style = "filled,rounded", fillcolor = "#B1FF9F", label = "{<i>000180 \n | { <v>SYMB | [;]59} | { <l> 000000  |<r>  000000}}"]
 }

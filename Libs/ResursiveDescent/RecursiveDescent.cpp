@@ -5,6 +5,9 @@
 
 //#define DEBUG
 
+
+static Node* last_comand = 0;
+
 //----------------------------
 //Grammar   ::= CreateVar* {Equal | {PlusMinus ';'}}*
 //CreateVar ::= "var"V ';'
@@ -57,13 +60,14 @@ Node* CreateNodeWithChild_Op(Node* left_node, Node* right_node, OPER_TYPES op)
     return new_node;
 }
 
-int  MakeTreeFromComands(Tree* tree, Node* program)
+int  MakeTreeFromComands(Tree* tree, Node* program, size_t comand_num)
 {
     assert(tree);
     assert(program);
 
     ReturnIfError(TreeCheck(tree));
     
+    last_comand = program + comand_num;
     tree->root = GetNodeFromComands(program);
 
     return 0;
@@ -80,8 +84,11 @@ Node* GetNodeFromComands(Node* program)
     while ((new_var = GetCreateVar(&program)) != nullptr)
     {
         Node* new_node  = NodeCtorFict();
-        new_node->left  = val;
-        new_node->right = new_var;
+        L(new_node)     = val;
+        R(new_node)     = NodeCtorKeyword(KEYWORD_VAR);
+        RR(new_node)    = new_var;
+        RL(new_node)    = nullptr;
+
         val = new_node;
     }
 
@@ -94,13 +101,29 @@ Node* GetNodeFromComands(Node* program)
 
 static Node* GetCreateVar(Node** ip)
 {
+    if (*ip == nullptr || *ip >= last_comand)
+        return nullptr;
     Node* new_node = nullptr;
-    if (IS_KEYWORD(*ip) && !strcmp((VAL_KEYWORD(*ip)), "var"))
+
+    if (TYPE(*ip) == TYPE_KEYWORD)
     {
-        (*ip)++;
-        new_node = GetVar(ip);
-        CheckSyntaxError((IS_SYMB(*ip) && VAL_SYMB(*ip) == ';'), *ip);
-        (*ip)++;
+        switch (VAL_KEYWORD(*ip))
+        {
+            case KEYWORD_VAR:
+            {
+                (*ip)++;
+                new_node = GetVar(ip);
+                CheckSyntaxError((IS_SYMB(*ip) && VAL_SYMB(*ip) == ';'), *ip);
+                (*ip)++;
+                break;
+            }
+
+            case UNDEF_KEYWORD_TYPE:
+                return nullptr;
+            
+            default:
+                break;
+        }
     }
 
     return new_node;
@@ -108,6 +131,8 @@ static Node* GetCreateVar(Node** ip)
 
 static Node* GetEqual(Node** ip)
 {
+    if (*ip == nullptr || *ip >= last_comand)
+        return nullptr;
     Node* new_node = GetVar(ip);
     if (new_node == nullptr) return nullptr;
 
@@ -122,6 +147,8 @@ static Node* GetEqual(Node** ip)
 
 static Node* GetPlusMinus(Node** s)
 {
+    if (*s == nullptr || *s >= last_comand)
+        return nullptr;
     #ifdef DEBUG
         printf("(PlusMinus)\n" "[%d]\n", (*s)->val.number_cmp_in_text);
     #endif
@@ -150,6 +177,8 @@ static Node* GetPlusMinus(Node** s)
 
 static Node* GetMulDiv(Node** s)
 {
+    if (*s == nullptr || *s >= last_comand)
+        return nullptr;
     #ifdef DEBUG
         printf("(MulDiv)\n" "[%d]\n", (*s)->val.number_cmp_in_text);
     #endif
@@ -184,6 +213,8 @@ static Node* GetMulDiv(Node** s)
 
 static Node* GetPow(Node** s)
 {
+    if (*s == nullptr || *s >= last_comand)
+        return nullptr;
     #ifdef DEBUG
         printf("(POW)\n" "[%d]\n", (*s)->val.number_cmp_in_text);
     #endif
@@ -207,6 +238,8 @@ static Node* GetPow(Node** s)
 
 static Node* GetBrackets(Node** s)
 {
+    if (*s == nullptr || *s >= last_comand)
+        return nullptr;
     #ifdef DEBUG
         printf("(Breackets)\n" "[%d]\n", (*s)->val.number_cmp_in_text);
     #endif
@@ -241,6 +274,8 @@ static Node* GetBrackets(Node** s)
 
 static Node* GetVar(Node** s)
 {
+    if (*s == nullptr || *s >= last_comand)
+        return nullptr;
     #ifdef DEBUG
         printf("(Var)\n" "[%d] s = %p\n", (*s)->val.number_cmp_in_text, *s);
     #endif
@@ -269,6 +304,8 @@ static Node* GetVar(Node** s)
 
 static Node* GetNumber(Node** s)
 {
+    if (*s == nullptr || *s >= last_comand)
+        return nullptr;
     #ifdef DEBUG
         printf("(Number)\n" "[%d]\n", (*s)->val.number_cmp_in_text);
     #endif

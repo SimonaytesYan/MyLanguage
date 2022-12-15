@@ -189,7 +189,7 @@ static void WriteNodeAndEdge(Node* node, void* fp_void)
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wformat"
     fprintf(fp, "Node%06X[style = \"filled,rounded\", fillcolor = \"#B1FF9F\", label = \"{<i>%06X \\n | { <v>",
-                     node,                                                                      node);
+                     node,                                                                   node);
     switch (node->val.type)
     {
     case TYPE_SYMB:
@@ -206,7 +206,10 @@ static void WriteNodeAndEdge(Node* node, void* fp_void)
         fprintf(fp, "VAR | %s ", VAL_VAR(node));
         break;
     case TYPE_KEYWORD:
-        fprintf(fp, "KEYWORD", VAL_KEYWORD(node));
+        fprintf(fp, "KEYWORD | %d", VAL_KEYWORD(node));
+        if (VAL_KEYWORD(node) < KEYWORDS_NUM)
+            fprintf(fp, "<%s> " , KEYWORDS[VAL_KEYWORD(node)]);
+        break;
     case UNDEF_NODE_TYPE:
         fprintf(fp, "UNDEF");
         break;
@@ -371,6 +374,19 @@ static Node* NodeCtorFict()
     return new_node;
 }
 
+static Node* NodeCtorKeyword(KEYWORD_TYPES val)
+{
+    Node* new_node = (Node*)calloc(1, sizeof(Node));
+
+    Node_t node_val      = {};
+    node_val.type        = TYPE_KEYWORD;
+    node_val.val.keyword = val;
+
+    NodeCtor(new_node, node_val);
+
+    return new_node;
+}
+
 static Node* NodeCtorSymb(int val)
 {
     Node* new_node = (Node*)calloc(1, sizeof(Node));
@@ -457,6 +473,18 @@ static Node  _NodeCtorOp(OPER_TYPES val)
     new_node.val.val.op  = val;
     new_node.left        = nullptr;
     new_node.right       = nullptr;
+
+    return new_node;
+}
+
+static Node  _NodeCtorKeyword(KEYWORD_TYPES val)
+{
+    Node new_node    = {};
+
+    new_node.val.type        = TYPE_KEYWORD;
+    new_node.val.val.keyword = val;
+    new_node.left            = nullptr;
+    new_node.right           = nullptr;
 
     return new_node;
 }

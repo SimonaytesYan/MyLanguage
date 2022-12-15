@@ -79,7 +79,7 @@ void PrintElemInLog(Node_t elem)
         LogPrintf("\tvar  = <%s>\n", elem.val.var);
         break;
     case TYPE_KEYWORD:
-        LogPrintf("\tkeyword = <%s>\n", elem.val.keyword);
+        LogPrintf("\tkeyword = <%d>\n", elem.val.keyword);
         break;
     case TYPE_SYMB:
         LogPrintf("\t symb = <%c>%d\n", elem.val.symb, elem.val.symb);
