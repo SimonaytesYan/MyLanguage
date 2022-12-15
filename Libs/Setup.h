@@ -98,6 +98,5 @@ struct Program_t
     size_t comands_num = 0;
 };
 
-#define DEBUG
 
 #endif

@@ -4,6 +4,7 @@
 #include "../Logging/Logging.h"
 
 static Node* last_comand = 0;
+#define DEBUG
 
 //----------------------------
 //Grammar   ::= CreateVar* {Equal | {PlusMinus ';'}}+
@@ -111,6 +112,8 @@ Node* GetNodeFromComands(Node* program)
             new_node = GetPlusMinus(&program);
             if (new_node == nullptr)
                 break;
+            CheckSyntaxError(IS_SYMB(program) && VAL_SYMB(program) == ';', program);
+            program++;
         }
         
         R(val) = new_node;
@@ -179,6 +182,8 @@ static Node* GetEqual(Node** ip)
     L(new_node) = var;
     (*ip)++;
     R(new_node) = GetPlusMinus(ip);
+    CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ';', *ip);
+    (*ip)++;
 
     if (R(new_node) == nullptr)
         return nullptr;
@@ -195,7 +200,8 @@ static Node* GetPlusMinus(Node** s)
     if (*s == nullptr || *s >= last_comand)
         return nullptr;
     #ifdef DEBUG
-        printf("(PlusMinus)\n" "[%d]\n", (*s)->val.number_cmd_in_text);
+        printf("(PlusMinus)\n" "[%d][%d]\n", (*s)->val.number_cmd_line_in_text,
+                                             (*s)->val.number_cmd_in_text);
     #endif
 
     Node* val = GetMulDiv(s);
@@ -225,7 +231,8 @@ static Node* GetMulDiv(Node** s)
     if (*s == nullptr || *s >= last_comand)
         return nullptr;
     #ifdef DEBUG
-        printf("(MulDiv)\n" "[%d]\n", (*s)->val.number_cmd_in_text);
+        printf("(MulDiv)\n" "[%d][%d]\n", (*s)->val.number_cmd_line_in_text,
+                                          (*s)->val.number_cmd_in_text);
     #endif
 
     Node* val = GetPow(s);
@@ -261,7 +268,8 @@ static Node* GetPow(Node** s)
     if (*s == nullptr || *s >= last_comand)
         return nullptr;
     #ifdef DEBUG
-        printf("(POW)\n" "[%d]\n", (*s)->val.number_cmd_in_text);
+        printf("(POW)\n" "[%d][%d]\n", (*s)->val.number_cmd_line_in_text,
+                                       (*s)->val.number_cmd_in_text);
     #endif
     Node* node = GetBrackets(s);
     if (node == nullptr) return nullptr;
@@ -286,7 +294,8 @@ static Node* GetBrackets(Node** s)
     if (*s == nullptr || *s >= last_comand)
         return nullptr;
     #ifdef DEBUG
-        printf("(Breackets)\n" "[%d]\n", (*s)->val.number_cmd_in_text);
+        printf("(Breackets)\n" "[%d][%d]\n", (*s)->val.number_cmd_line_in_text,
+                                             (*s)->val.number_cmd_in_text);
     #endif
 
     Node* val = 0;
@@ -322,7 +331,8 @@ static Node* GetVar(Node** s)
     if (*s == nullptr || *s >= last_comand)
         return nullptr;
     #ifdef DEBUG
-        printf("(Var)\n" "[%d]", (*s)->val.number_cmd_in_text);
+        printf("(Var)\n" "[%d][%d]\n", (*s)->val.number_cmd_line_in_text,
+                                       (*s)->val.number_cmd_in_text);
     #endif
 
     Node* node = nullptr;
@@ -352,7 +362,8 @@ static Node* GetNumber(Node** s)
     if (*s == nullptr || *s >= last_comand)
         return nullptr;
     #ifdef DEBUG
-        printf("(Number)\n" "[%d]\n", (*s)->val.number_cmd_in_text);
+        printf("(Number)\n" "[%d][%d]\n", (*s)->val.number_cmd_line_in_text,
+                                          (*s)->val.number_cmd_in_text);
     #endif
 
     Node* new_node = CpyNode(*s);
