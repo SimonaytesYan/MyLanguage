@@ -17,6 +17,61 @@ static size_t skip_spaces_s(const char* s)
     return skipped;
 }
 
+static void GetNumber(const char* buffer, size_t *ind, const size_t ip, Node* program)
+{
+    #ifdef DEBUG
+        fprintf(stderr, "NUMBER\n");
+    #endif
+    int new_number = 0;
+    int add_to_ind = 0;
+    sscanf(buffer + *ind, "%d%n", &new_number, &add_to_ind);
+    program[ip] = _NodeCtorNum(new_number);
+    program[ip].val.number_cmp_in_text = *ind;
+
+    (*ind) += add_to_ind;
+}
+
+static bool GetOperator(const char* buffer, size_t *ind, const size_t ip, Node* program)
+{
+    bool operator_found = false;
+    for(int k = 0; k < STD_OPERATORS_NUM; k++)
+    {
+        size_t lenght = strlen(STD_OPERATORS[k].name);
+
+        if (!strncmp(buffer + *ind, STD_OPERATORS[k].name, lenght))
+        {
+            #ifdef DEBUG
+                fprintf(stderr, "OPERATOR\n");
+            #endif
+
+            program[ip] = _NodeCtorOp(STD_OPERATORS[k].code);
+            program[ip].val.number_cmp_in_text = *ind;
+            operator_found = true;
+            (*ind) += lenght;
+            break;
+        }
+    }
+    return operator_found;
+}
+
+static void GetVar(const char* buffer, size_t *ind, const size_t ip, Node* program)
+{
+    int        add_to_ind               = 0;
+    const char new_var[MAX_VAR_SIZE]  = "";
+    sscanf(buffer + *ind, "%[a-zA-Z0-9_]%n", new_var, &add_to_ind);
+
+    if (add_to_ind != 0)
+    {
+        #ifdef DEBUG
+            fprintf(stderr, "VAR\n");
+        #endif
+        program[ip] = _NodeCtorVar(new_var);
+        program[ip].val.number_cmp_in_text = *ind;
+        (*ind) += add_to_ind;
+    }
+}
+
+
 Node* GetProgramFromFile(const char* program_file_name, int* program_size)
 {
     size_t number_lines      = 0;
@@ -49,87 +104,46 @@ Node* GetProgramFromFile(const char* program_file_name, int* program_size)
             fprintf(stderr, "[%d]buffer = <%s>\n", i, buffer);
         #endif
 
-        int j = 0;
-        j += skip_spaces_s(buffer + j);
-        while (buffer[j] != '\0' && buffer[j] != '\n')
+        size_t ind = 0;
+        ind += skip_spaces_s(buffer + ind);
+        while (buffer[ind] != '\0' && buffer[ind] != '\n')
         {
             #ifdef DEBUG
                 printf("ip = %d\n", ip);
                 //fprintf(stderr, "buffer[%d] = <%s>\n", j, buffer + j);
             #endif
 
-            int old_j = j;
-            if ('0' <= buffer[j] && buffer[j] <= '9')
+            int old_ind = ind;
+            if ('0' <= buffer[ind] && buffer[ind] <= '9')
+                GetNumber(buffer, &ind, ip, program);
+            else 
             {
-                #ifdef DEBUG
-                    fprintf(stderr, "NUMBER\n");
-                #endif
-                int new_number = 0;
-                int add_to_j   = 0;
-                sscanf(buffer + j, "%d%n", &new_number, &add_to_j);
-                program[ip] = _NodeCtorNum(new_number);
-                program[ip].val.number_cmp_in_text = j;
-
-                j += add_to_j;
-            }
-            else
-            {
-                bool operator_found = false;
-                for(int k = 0; k < STD_OPERATORS_NUM; k++)
+                if (!GetOperator(buffer, &ind, ip, program))
                 {
-                    size_t lenght = strlen(STD_OPERATORS[k].name);
-
-                    if (!strncmp(buffer + j, STD_OPERATORS[k].name, lenght))
-                    {
-                        #ifdef DEBUG
-                            fprintf(stderr, "OPERATOR\n");
-                        #endif
-
-                        program[ip] = _NodeCtorOp(STD_OPERATORS[k].code);
-                        program[ip].val.number_cmp_in_text = j;
-                        operator_found = true;
-                        j += lenght;
-                        break;
-                    }
-                }
-                if (!operator_found)
-                {
-                    #ifdef DEBUG
-                        fprintf(stderr, "VAR\n");
-                    #endif
-                    int        add_to_j               = 0;
-                    const char new_var[MAX_VAR_SIZE]  = "";
-                    sscanf(buffer + j, "%[a-zA-Z0-9_]%n", new_var, &add_to_j);
-
-                    if (add_to_j != 0)
-                    {
-                        program[ip] = _NodeCtorVar(new_var);
-                        program[ip].val.number_cmp_in_text = j;
-                        j += add_to_j;
-                    }
+                    GetVar(buffer, &ind, ip, program);
                 }
             }
             
             #ifdef DEBUG
-                printf("j     = %d\n", j);
-                printf("old_j = %d\n", old_j);
+                printf("ind     = %d\n", ind);
+                printf("old_ind = %d\n", old_ind);
             #endif
 
-            if (j == old_j)
+            if (ind == old_ind)
             {
                 #ifdef DEBUG
                     fprintf(stderr, "SYMBOL\n");
                 #endif
                 int symbol   = 0;
-                int add_to_j = 0;
-                sscanf(buffer + j, "%c%n", &symbol, &add_to_j);
+                int add_to_ind = 0;
+                sscanf(buffer + ind, "%c%n", &symbol, &add_to_ind);
 
                 program[ip] = _NodeCtorSymb(symbol);
-                program[ip].val.number_cmp_in_text = j;
-                j += add_to_j;
+                program[ip].val.number_cmp_in_text = ind;
+                ind += add_to_ind;
             }
             ip++;
-            j += skip_spaces_s(buffer + j);
+            ind += skip_spaces_s(buffer + ind);
         }
 
         #ifdef DEBUG
