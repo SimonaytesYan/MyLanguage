@@ -2,8 +2,8 @@
 *.log
 *.sym
 *.png
-GraphicDumps/
 *.sy
 *.
 Obj
 Exe
+GraphicDumps
