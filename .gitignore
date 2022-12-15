@@ -2,7 +2,7 @@
 *.log
 *.sym
 *.png
-GraphicDumps
+GraphicDumps/
 *.sy
 *.
 Obj
