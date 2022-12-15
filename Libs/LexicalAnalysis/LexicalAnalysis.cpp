@@ -17,7 +17,7 @@ static size_t skip_spaces_s(const char* s)
     return skipped;
 }
 
-static void GetNumber(const char* buffer, size_t *ind, const size_t ip, Node* program)
+static void GetNumber(const char* buffer, size_t *ind, const size_t ip, Node* program, const int line)
 {
     #ifdef DEBUG
         fprintf(stderr, "NUMBER\n");
@@ -26,12 +26,13 @@ static void GetNumber(const char* buffer, size_t *ind, const size_t ip, Node* pr
     int add_to_ind = 0;
     sscanf(buffer + *ind, "%d%n", &new_number, &add_to_ind);
     program[ip] = _NodeCtorNum(new_number);
-    program[ip].val.number_cmp_in_text = *ind;
+    program[ip].val.number_cmd_in_text      = *ind;
+    program[ip].val.number_cmd_line_in_text = line;
 
     (*ind) += add_to_ind;
 }
 
-static bool GetOperator(const char* buffer, size_t *ind, const size_t ip, Node* program)
+static bool GetOperator(const char* buffer, size_t *ind, const size_t ip, Node* program, const int line)
 {
     bool operator_found = false;
     for(int k = 0; k < STD_OPERATORS_NUM; k++)
@@ -45,7 +46,8 @@ static bool GetOperator(const char* buffer, size_t *ind, const size_t ip, Node* 
             #endif
 
             program[ip] = _NodeCtorOp(STD_OPERATORS[k].code);
-            program[ip].val.number_cmp_in_text = *ind;
+            program[ip].val.number_cmd_in_text = *ind;
+            program[ip].val.number_cmd_line_in_text = line;
             operator_found = true;
             (*ind) += lenght;
             break;
@@ -54,7 +56,7 @@ static bool GetOperator(const char* buffer, size_t *ind, const size_t ip, Node* 
     return operator_found;
 }
 
-static void GetVar(const char* buffer, size_t *ind, const size_t ip, Node* program)
+static void GetVar(const char* buffer, size_t *ind, const size_t ip, Node* program, const int line)
 {
     int        add_to_ind               = 0;
     const char new_var[MAX_VAR_SIZE]  = "";
@@ -66,14 +68,14 @@ static void GetVar(const char* buffer, size_t *ind, const size_t ip, Node* progr
             fprintf(stderr, "VAR\n");
         #endif
         program[ip] = _NodeCtorVar(new_var);
-        program[ip].val.number_cmp_in_text = *ind;
+        program[ip].val.number_cmd_in_text = *ind;
+        program[ip].val.number_cmd_line_in_text = line;
         (*ind) += add_to_ind;
     }
 }
 
-static void GetSymbol(const char* buffer, size_t *ind, const size_t ip, Node* program)
+static void GetSymbol(const char* buffer, size_t *ind, const size_t ip, Node* program, const int line)
 {
-    
     #ifdef DEBUG
         fprintf(stderr, "SYMBOL\n");
     #endif
@@ -83,11 +85,12 @@ static void GetSymbol(const char* buffer, size_t *ind, const size_t ip, Node* pr
     sscanf(buffer + *ind, "%c%n", &symbol, &add_to_ind);
 
     program[ip] = _NodeCtorSymb(symbol);
-    program[ip].val.number_cmp_in_text = *ind;
+    program[ip].val.number_cmd_in_text      = *ind;
+    program[ip].val.number_cmd_line_in_text = line;
     (*ind) += add_to_ind;
 }
 
-static bool GetKeyword(const char* buffer, size_t *ind, const size_t ip, Node* program)
+static bool GetKeyword(const char* buffer, size_t *ind, const size_t ip, Node* program, const int line)
 {
     bool keyword_found = false;
     for(int k = 0; k < KEYWORDS_NUM; k++)
@@ -101,7 +104,8 @@ static bool GetKeyword(const char* buffer, size_t *ind, const size_t ip, Node* p
             #endif
 
             program[ip] = _NodeCtorKeyword(KEYWORDS[k].code);
-            program[ip].val.number_cmp_in_text = *ind;
+            program[ip].val.number_cmd_in_text = *ind;
+            program[ip].val.number_cmd_line_in_text = line;
             keyword_found = true;
             (*ind) += lenght;
             break;
@@ -133,13 +137,15 @@ Node* GetProgramFromFile(const char* program_file_name, size_t* program_size)
     CHECK(buffer  == nullptr, "error during allocation memory for buffer",  nullptr);
     CHECK(program == nullptr, "error during allocation memory for program", nullptr);
 
-    for(int i = 0; i < number_lines; i++)
+    for(int line = 0; line < number_lines; line++)
     {
         int buffer_size = 0;
-        fscanf(fp, "%[^\n]%n", buffer, &buffer_size);
+        fscanf(fp, "%[^\n]\n%n", buffer, &buffer_size);
+        if (buffer_size == 0)
+            continue;
         #ifdef DEBUG
             printf("buffer_size = %d\n", buffer_size);
-            fprintf(stderr, "[%d]buffer = <%s>\n", i, buffer);
+            fprintf(stderr, "[%d]buffer = <%s>\n", line, buffer);
         #endif
 
         size_t ind = 0;
@@ -152,11 +158,11 @@ Node* GetProgramFromFile(const char* program_file_name, size_t* program_size)
 
             int old_ind = ind;
             if ('0' <= buffer[ind] && buffer[ind] <= '9')
-                GetNumber(buffer, &ind, ip, program);
-            else if (!GetOperator(buffer, &ind, ip, program))
+                GetNumber(buffer, &ind, ip, program, line);
+            else if (!GetOperator(buffer, &ind, ip, program, line))
             {
-                if (!GetKeyword(buffer, &ind, ip, program))
-                    GetVar(buffer, &ind, ip, program);
+                if (!GetKeyword(buffer, &ind, ip, program, line))
+                    GetVar(buffer, &ind, ip, program, line);
             }
             
             #ifdef DEBUG
@@ -165,7 +171,7 @@ Node* GetProgramFromFile(const char* program_file_name, size_t* program_size)
             #endif
 
             if (ind == old_ind)
-                GetSymbol(buffer, &ind, ip, program);
+                GetSymbol(buffer, &ind, ip, program, line);
             ip++;
             ind += skip_spaces_s(buffer + ind);
         }

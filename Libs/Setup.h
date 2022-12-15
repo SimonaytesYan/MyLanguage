@@ -3,8 +3,6 @@
 
 #include <cstddef>
 
-#define DEBUG
-
 enum NODE_TYPES
 {
     UNDEF_NODE_TYPE = -1,
@@ -55,7 +53,8 @@ struct Node_t
         char*         var;
         KEYWORD_TYPES keyword;
     } val;
-    size_t number_cmp_in_text = 0;
+    size_t number_cmd_line_in_text = 0;
+    size_t number_cmd_in_text      = 0;
 };
 
 struct Operator_t
@@ -72,7 +71,7 @@ struct Keyword_t
 
 const int MAX_VAR_SIZE      = 20;
 
-const int STD_OPERATORS_NUM = 5;
+const int STD_OPERATORS_NUM = 6;
 
 const Operator_t STD_OPERATORS[] = {
                                     {"+", OP_PLUS},
@@ -80,6 +79,7 @@ const Operator_t STD_OPERATORS[] = {
                                     {"*", OP_MUL},
                                     {"/", OP_DIV},
                                     {"^", OP_POW},
+                                    {"=", OP_EQ}
                                    };
 
 const int KEYWORDS_NUM = 1;
@@ -97,5 +97,7 @@ struct Program_t
     Node*  comands     = nullptr;;
     size_t comands_num = 0;
 };
+
+#define DEBUG
 
 #endif

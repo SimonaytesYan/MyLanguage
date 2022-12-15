@@ -190,36 +190,41 @@ static void WriteNodeAndEdge(Node* node, void* fp_void)
     #pragma GCC diagnostic ignored "-Wformat"
     fprintf(fp, "Node%06X[style = \"filled,rounded\", fillcolor = \"#B1FF9F\", label = \"{<i>%06X \\n | { <v>",
                      node,                                                                   node);
+    
     switch (node->val.type)
     {
-    case TYPE_SYMB:
-        fprintf(fp, "SYMB | [%c]%d", VAL_SYMB(node), VAL_SYMB(node));
-        break;
-    case TYPE_NUM:
-        fprintf(fp, "NUM | %lf", VAL_N(node));
-        break;
-    case TYPE_OP:
-        fprintf(fp, "OPER | ");
-        fprintOper
-        break;
-    case TYPE_VAR:
-        fprintf(fp, "VAR | %s ", VAL_VAR(node));
-        break;
-    case TYPE_KEYWORD:
-        fprintf(fp, "KEYWORD | %d", VAL_KEYWORD(node));
-        if (VAL_KEYWORD(node) < KEYWORDS_NUM)
-            fprintf(fp, "<%s> " , KEYWORDS[VAL_KEYWORD(node)]);
-        break;
-    case UNDEF_NODE_TYPE:
-        fprintf(fp, "UNDEF");
-        break;
-    default:
-        fprintf(fp, "unknown");
-        break;
+        case TYPE_SYMB:
+            fprintf(fp, "SYMB | [%c]%d", VAL_SYMB(node), VAL_SYMB(node));
+            break;
+        case TYPE_NUM:
+            fprintf(fp, "NUM | %lf", VAL_N(node));
+            break;
+        case TYPE_OP:
+            fprintf(fp, "OPER | ");
+            fprintOper
+            break;
+        case TYPE_VAR:
+            fprintf(fp, "VAR | %s ", VAL_VAR(node));
+            break;
+        case TYPE_KEYWORD:
+            fprintf(fp, "KEYWORD | %d", VAL_KEYWORD(node));
+            if (VAL_KEYWORD(node) < KEYWORDS_NUM)
+                fprintf(fp, "<%s> " , KEYWORDS[VAL_KEYWORD(node)]);
+            break;
+        case TYPE_FICT:
+            fprintf(fp, "FICT ");
+            break;
+        case UNDEF_NODE_TYPE:
+            fprintf(fp, "UNDEF");
+            break;
+        default:
+            fprintf(fp, "unknown");
+            break;
     }
 
-    fprintf(fp, "} | { <l> %06X  |<r>  %06X}}\"]\n",
-                 node->left, node->right);
+    fprintf(fp, "} | {line = %ld | simb = %ld}",
+                node->val.number_cmd_line_in_text, node->val.number_cmd_in_text);
+    fprintf(fp, "| { <l> %06X  |<r>  %06X}}\"]\n", node->left, node->right);
     
     if (node->left != nullptr)
         fprintf(fp, "Node%06X -> Node%06X[xlabel = \"L\"]\n", node, node->left);
@@ -564,8 +569,10 @@ static Node* CpyNode(Node* node)
 
     Node* new_node = (Node*)calloc(1, sizeof(Node));
 
-    new_node->val.type = node->val.type;
-    new_node->val.val  = node->val.val;
+    new_node->val.type                    = node->val.type;
+    new_node->val.number_cmd_in_text      = node->val.number_cmd_in_text;
+    new_node->val.number_cmd_line_in_text = node->val.number_cmd_line_in_text;
+    new_node->val.val                     = node->val.val;
     if (TYPE(new_node) == TYPE_VAR)
     {
         VAL_VAR(new_node) = (char*)calloc(1, strlen(VAL_VAR(node)) + 1);

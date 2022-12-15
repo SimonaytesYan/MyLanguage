@@ -54,7 +54,10 @@ const double PRECISION = 1e-6;
             fprintf(fp, "/");   \
             break;              \
         case OP_POW:            \
-            fprintf(fp, "^");  \
+            fprintf(fp, "^");   \
+            break;              \
+        case OP_EQ:             \
+            fprintf(fp, "=");   \
             break;              \
         case UNDEF_OPER_TYPE:   \
             fprintf(fp, "?");   \
