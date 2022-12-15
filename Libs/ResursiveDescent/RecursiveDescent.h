@@ -1,4 +1,4 @@
-#include "../TreeSetup.h"
+#include "../Setup.h"
 #include "../BinaryTree/BinaryTree.h"
 
 struct Function_t
@@ -7,4 +7,6 @@ struct Function_t
     const OPER_TYPES code = UNDEF_OPER_TYPE; 
 };
 
-Node* GetNodeFromStr(const char* str);
+int  MakeTreeFromComands(Tree* tree, Node* program);
+
+Node* GetNodeFromComands(Node* program);

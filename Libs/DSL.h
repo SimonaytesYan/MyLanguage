@@ -38,6 +38,32 @@ const double PRECISION = 1e-6;
     L(node) = nullptr;                          \
     R(node) = nullptr;
 
+#define fprintOper              \
+    switch(node->val.val.op)    \
+    {                           \
+        case OP_PLUS:           \
+            fprintf(fp, "+");   \
+            break;              \
+        case OP_SUB:            \
+            fprintf(fp, "-");   \
+            break;              \
+        case OP_MUL:            \
+            fprintf(fp, "*");   \
+            break;              \
+        case OP_DIV:            \
+            fprintf(fp, "/");   \
+            break;              \
+        case OP_POW:            \
+            fprintf(fp, "^");  \
+            break;              \
+        case UNDEF_OPER_TYPE:   \
+            fprintf(fp, "?");   \
+            break;              \
+        default:                \
+            fprintf(fp, "#");   \
+            break;              \
+    }
+
 #define L(node) (node)->left
 
 #define R(node) (node)->right
@@ -50,6 +76,7 @@ const double PRECISION = 1e-6;
 
 #define RR(node) (node)->right->right
 
+
 #define IS_L_OP(node) (L(node) != nullptr && IS_OP(L(node)))
 
 #define IS_L_NUM(node) (L(node) != nullptr && IS_NUM(L(node)))
@@ -58,11 +85,11 @@ const double PRECISION = 1e-6;
 
 #define IS_R_OP(node) (R(node) != nullptr && IS_OP(R(node)))
 
-#define IS_VAR(node) (node->val.type == TYPE_VAR)
+#define IS_VAR(node) ((node)->val.type == TYPE_VAR)
 
-#define IS_OP(node) (node->val.type == TYPE_OP)
+#define IS_OP(node) ((node)->val.type == TYPE_OP)
 
-#define IS_NUM(node) (node->val.type == TYPE_NUM)
+#define IS_NUM(node) ((node)->val.type == TYPE_NUM)
 
 #define IS_ZERO(node) (IS_NUM(node) && -PRECISION <= VAL_N(node) &&  VAL_N(node) <= PRECISION)
 
@@ -70,14 +97,30 @@ const double PRECISION = 1e-6;
 
 #define IS_DOUBLE_EQ(x, y) ((-PRECISION <= (x - y)) && ((x - y) <= PRECISION))
 
+#define IS_PLUS(node) (IS_OP(node) && VAL_OP(node) == OP_PLUS)
 
-#define VAL_N(node) node->val.val.dbl
+#define IS_SUB(node) (IS_OP(node) && VAL_OP(node) == OP_SUB)
 
-#define VAL_OP(node) node->val.val.op
+#define IS_MUL(node) (IS_OP(node) && VAL_OP(node) == OP_MUL)
 
-#define VAL_VAR(node) node->val.val.var
+#define IS_DIV(node) (IS_OP(node) && VAL_OP(node) == OP_DIV)
 
-#define TYPE(node) node->val.type
+#define IS_SYMB(node) (TYPE(node) == TYPE_SYMB)
+
+#define IS_KEYWORD(node) (TYPE(node) == TYPE_KEYWORD)
+
+
+#define VAL_N(node) (node)->val.val.dbl
+
+#define VAL_OP(node) (node)->val.val.op
+
+#define VAL_VAR(node) (node)->val.val.var
+
+#define VAL_SYMB(node) (node)->val.val.symb
+
+#define VAL_KEYWORD(node) (node)->val.val.keyword
+
+#define TYPE(node) (node)->val.type
 
 
 #define PUT_PLUS                    \

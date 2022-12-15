@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-#include "../TreeSetup.h"
+#include "../Setup.h"
 
 const int MAX_STR_TREE_SIZE = 100;
 
@@ -17,10 +17,6 @@ struct FileStruct
 };
 
 void GetDataFromFile(const char* file_name, FileStruct* data_from_file);
-
-int  GetTreeFromFile(Tree* tree, const char file_name[]);
-
-int  SaveTreeInFile(Tree* tree, FILE* fp);
 
 void OutputGraphicDump(Tree* tree);
 

@@ -5,55 +5,48 @@
 
 //#define DEBUG
 
-const char* FIRST_ELEM_PTR = nullptr;
+//----------------------------
+//Grammar   ::= CreateVar* {Equal | {PlusMinus ';'}}*
+//CreateVar ::= "var"V ';'
+//Equal     ::= V '=' PlusMinus ';'
+//PlusMinus ::= MulDiv{['+','-']T}*
+//MulDiv    ::= POW{['*','/']POW}*
+//Pow       ::= Breakets {"^" POW}*
+//Brackets  ::= '('PlusMinus')' | Var | Num
+//Var       ::= ['a'-'z','0'-'9','_']
+//Number    ::= ['0'-'9']+
+//----------------------------
 
 //----------------------------
-//G   ::= E ';'
-//E   ::= T{['+','-']T}*
-//T   ::= P{['*','/']P}*
-//O   ::= {"sin" | "cos" | "log"}?POW
-//POW ::= P {"**"O}*
-//P   ::= '('E')' | V
-//V   ::= ['a'-'z'] | N
-//N   ::= ['0'-'9']+
-//----------------------------
-
-//----------------------------
-//+: x**2; x**x**x; y+sin(x**2); 5; 2934; 14+99; 5*x; x; 2 + x*(3 + 4542/2) - y; sin(sin(x)); y + sin(a * cos(log(1))) 
+//+: x^2; x^x^x; y+sin(x^2); 5; 2934; 14+99; 5*x; x; 2 + x*(3 + 4542/2) - y; sin(sin(x)); y + sin(a * cos(log(1))) 
 //-: -5; +7; -19*7; x + u15; 17l; x + y - ; kl; A
 //----------------------------
 
-const int STD_FUNCTION_NUM = 3;
-
-const Function_t STD_FUNCTION[] = {
-                                    {"sin", OP_SIN},
-                                    {"cos", OP_COS},
-                                    {"log", OP_LOG},
-                                   };
-
-#define CheckSyntaxError(cond, s)                                                       \
-    if (!(cond))                                                                        \
-    {                                                                                   \
-        LogPrintf("Syntax error in symbol %lld: %s\n", s - FIRST_ELEM_PTR , #cond);       \
-        fprintf(stderr, "Syntax error in symbol %lld: %s\n", s - FIRST_ELEM_PTR , #cond); \
-        return nullptr;                                                                 \
+#define CheckSyntaxError(cond, node)                                                                    \
+    if (!(cond))                                                                                        \
+    {                                                                                                   \
+        LogPrintf("Syntax error in symbol %lld: %s\n", (node)->val.number_cmp_in_text, #cond);          \
+        fprintf(stderr, "Syntax error in symbol %lld: %s\n", (node)->val.number_cmp_in_text, #cond);    \
+        return nullptr;                                                                                 \
     }
 
-static Node* GetE(const char** s);
-
-static Node* GetT(const char** s);
-
-static Node* GetP(const char** s);
-
-static Node* GetV(const char** s);
-
-static Node* GetN(const char** s);
-
-static Node* GetO(const char** s);
-
-static Node* GetPow(const char** s);
-
 Node* CreateNodeWithChild_Op(Node* left_node, Node* right_node, OPER_TYPES op);
+
+static Node* GetCreateVar(Node** ip);
+
+static Node* GetEqual(Node** ip);
+
+static Node* GetPlusMinus(Node** s);
+
+static Node* GetMulDiv(Node** s);
+
+static Node* GetPow(Node** s);
+
+static Node* GetBrackets(Node** s);
+
+static Node* GetVar(Node** s);
+
+static Node* GetNumber(Node** s);
 
 Node* CreateNodeWithChild_Op(Node* left_node, Node* right_node, OPER_TYPES op)
 {
@@ -64,224 +57,229 @@ Node* CreateNodeWithChild_Op(Node* left_node, Node* right_node, OPER_TYPES op)
     return new_node;
 }
 
-Node* GetNodeFromStr(const char* str)
+int  MakeTreeFromComands(Tree* tree, Node* program)
+{
+    assert(tree);
+    assert(program);
+
+    ReturnIfError(TreeCheck(tree));
+    
+    tree->root = GetNodeFromComands(program);
+
+    return 0;
+}
+
+Node* GetNodeFromComands(Node* program)
 {
     #ifdef DEBUG
-        printf("(G) s = <%s>\n", str);
+        printf("(Grammar)\n");
     #endif
 
-    FIRST_ELEM_PTR = str;
-    Node* val = GetE(&str);
-    if (val == nullptr) return nullptr;
+    Node* val     = nullptr;
+    Node* new_var = nullptr;
+    while ((new_var = GetCreateVar(&program)) != nullptr)
+    {
+        Node* new_node  = NodeCtorFict();
+        new_node->left  = val;
+        new_node->right = new_var;
+        val = new_node;
+    }
 
     #ifdef DEBUG
         printf("val = %p\n", val);
     #endif
-    CheckSyntaxError(*str == ';', str);
 
     return val;
 }
 
-Node* GetE(const char** s)
+static Node* GetCreateVar(Node** ip)
 {
-    #ifdef DEBUG
-        printf("(E) s = <%s>\n", *s);
-    #endif
-
-    Node* val = GetT(s);
-    if (val == nullptr) return nullptr;
-
-    while (**s == '+' || **s == '-')
+    Node* new_node = nullptr;
+    if (IS_KEYWORD(*ip) && !strcmp((VAL_KEYWORD(*ip)), "var"))
     {
-        char op = **s;
-        (*s)++;
-
-        Node* right_node = GetT(s);
-        if (right_node == nullptr) return nullptr;
-
-        if (op == '+')
-            val = CreateNodeWithChild_Op(val, right_node, OP_PLUS);
-        else
-            val = CreateNodeWithChild_Op(val, right_node, OP_SUB);
+        (*ip)++;
+        new_node = GetVar(ip);
+        CheckSyntaxError((IS_SYMB(*ip) && VAL_SYMB(*ip) == ';'), *ip);
+        (*ip)++;
     }
 
-    #ifdef DEBUG
-        printf("end E\n");
-    #endif
-    return val;
+    return new_node;
 }
 
-Node* GetT(const char** s)
+static Node* GetEqual(Node** ip)
 {
-    #ifdef DEBUG
-        printf("(T) s = <%s>\n", *s);
-    #endif
+    Node* new_node = GetVar(ip);
+    if (new_node == nullptr) return nullptr;
 
-    Node* val = GetO(s);
-    if (val == nullptr) return nullptr;
-
-    while (**s == '*' || **s == '/')
-    {
-        char op = **s;
-        (*s)++;
-
-        Node* right_node = GetO(s);
-        if (right_node == nullptr) return nullptr;
-
-        if (op == '*')
-            val = CreateNodeWithChild_Op(val, right_node, OP_MUL);
-        else
-            val = CreateNodeWithChild_Op(val, right_node, OP_DIV);
-    }
-
-    #ifdef DEBUG
-        printf("end T\n");
-    #endif
-
-    return val;
-}
-
-Node* GetO(const char** s)
-{
-    #ifdef DEBUG
-        printf("(O) s = <%s>\n", *s);
-    #endif
-
-    const char* old_s = *s;
-
-    //!ToDO сделать табличку функций в языке и номеров функций в коде 
-
-    Node* node = nullptr;
-    bool function_found = false;
-    for(int i = 0; i < STD_FUNCTION_NUM; i++)
-    {
-        size_t lenght = strlen(STD_FUNCTION[i].name);
-
-        if (!strncmp(*s, STD_FUNCTION[i].name, lenght))
-        {
-            node = NodeCtorOp(STD_FUNCTION[i].code);
-            (*s) += lenght;
-            R(node) = GetPow(s);
-            if (R(node) == nullptr) return nullptr;
-
-            function_found = true;
-            break;
-        }
-    }
-
-    if (!function_found)
-    {
-        node = GetPow(s);
-        if (node == nullptr) return nullptr;
-    }
-
-    CheckSyntaxError(*s != old_s, *s);
-
-    #ifdef DEBUG
-        printf("end O\n");
-    #endif
+    CheckSyntaxError(IS_OP(*ip) && VAL_OP(*ip) == OP_EQ, *ip)
     
-    return node;
+    L(*ip) = new_node;
+    (*ip)++;
+    R(*ip) = GetPlusMinus(ip);
+    new_node = *ip;
+    return new_node;    
 }
 
-Node* GetPow(const char** s)
+static Node* GetPlusMinus(Node** s)
 {
     #ifdef DEBUG
-        printf("(POW) s = <%s>\n", *s);
+        printf("(PlusMinus)\n" "[%d]\n", (*s)->val.number_cmp_in_text);
     #endif
-    Node* node = GetP(s);
+
+    Node* val = GetMulDiv(s);
+    if (val == nullptr) return nullptr;
+
+    while (IS_PLUS(*s) || IS_SUB(*s))
+    {
+        Node* op = CpyNode(*s);
+        (*s)++;
+
+        Node* right_node = GetMulDiv(s);
+        if (right_node == nullptr) return nullptr;
+
+        op->left   = val;
+        op->right = right_node;
+        val = op;
+    }
+
+    #ifdef DEBUG
+        printf("end PlusMinus\n");
+    #endif
+    return val;
+}
+
+static Node* GetMulDiv(Node** s)
+{
+    #ifdef DEBUG
+        printf("(MulDiv)\n" "[%d]\n", (*s)->val.number_cmp_in_text);
+    #endif
+
+    Node* val = GetPow(s);
+    if (val == nullptr) return nullptr;
+
+    #ifdef DEBUG
+        printf("(MulDiv)TYPE(*s) = %d\n", TYPE(*s));
+        if (TYPE(*s) == TYPE_OP)
+            printf("(MulDiv)OP(*s) = %d\n", VAL_OP(*s));
+    #endif
+    while (IS_MUL(*s) || IS_DIV(*s))
+    {
+        Node* op = CpyNode(*s);
+        (*s)++;
+
+        Node* right_node = GetPow(s);
+        if (right_node == nullptr) return nullptr;
+        
+        op->left  = val;
+        op->right = right_node;
+        val = op;
+    }
+
+    #ifdef DEBUG
+        printf("end MulDiv\n");
+    #endif
+
+    return val;
+}
+
+static Node* GetPow(Node** s)
+{
+    #ifdef DEBUG
+        printf("(POW)\n" "[%d]\n", (*s)->val.number_cmp_in_text);
+    #endif
+    Node* node = GetBrackets(s);
     if (node == nullptr) return nullptr;
 
-    while (!strncmp(*s, "**", 2))
+    while (IS_OP(*s) && VAL_OP(*s) == OP_POW)
     {
-        (*s)+=2;
-        Node* node_right = GetO(s);
-        if (node_right == nullptr) return nullptr;
-
-        node = CreateNodeWithChild_Op(node, node_right, OP_POW);
+        L(node) = CpyNode(*s);
+        (*s)++;
+        R(node) = GetPow(s);
+        if (R(node) == nullptr) return nullptr;
     }
+
+    #ifdef DEBUG
+        printf("end POW\n");
+    #endif
     
     return node;
 }
 
-Node* GetP(const char** s)
+static Node* GetBrackets(Node** s)
 {
     #ifdef DEBUG
-        printf("(P) s = <%s>\n", *s);
+        printf("(Breackets)\n" "[%d]\n", (*s)->val.number_cmp_in_text);
     #endif
 
     Node* val = 0;
-    if (**s == '(')
+    if (IS_SYMB(*s) && VAL_SYMB(*s))
     {
         (*s)++;
-        val = GetE(s);
+        val = GetPlusMinus(s);
         if (val == nullptr) return nullptr;
 
-        CheckSyntaxError(**s == ')', *s);
+        CheckSyntaxError(IS_SYMB(*s) && VAL_SYMB(*s) == ')', *s);
         (*s)++;
+    }
+    else if (IS_VAR(*s))
+    {
+        val = GetVar(s);
+        if (val == nullptr) return nullptr;
     }
     else
     {
-        val = GetV(s);
+        val = GetNumber(s);
         if (val == nullptr) return nullptr;
     }
 
     #ifdef DEBUG
-        printf("end P\n");
+        printf("end Breackets\n");
     #endif
 
     return val;
 }
 
-Node* GetV(const char** s)
+static Node* GetVar(Node** s)
 {
     #ifdef DEBUG
-        printf("(V) s = <%s>\n", *s);
+        printf("(Var)\n" "[%d] s = %p\n", (*s)->val.number_cmp_in_text, *s);
     #endif
 
     Node* node = nullptr;
-    if ('a' <= **s && **s <= 'z')
+    if (IS_VAR(*s))
     {
-        char* val = (char*)calloc(2, sizeof(char));
-        val[0] = **s;
-
-        node = NodeCtorVar(val);
-        free(val);
+        #ifdef DEBUG
+            printf("IT IS VAR\n");
+        #endif
+        node = CpyNode(*s);
         (*s)++;
     }
     else
     {
-        node = GetN(s);
-        if (node == nullptr) return nullptr;
+        #ifdef DEBUG
+            printf("NOT VAR. TYPE *s = %d\n. VAR TYPE = %d\n", (*s)->val.type, TYPE_VAR);
+        #endif
     }
-    
     #ifdef DEBUG
-        printf("end V\n");
+        printf("end Var\n s = %p\n", *s);
     #endif
 
     return node;
 }
 
-Node* GetN(const char** s)
+static Node* GetNumber(Node** s)
 {
     #ifdef DEBUG
-        printf("(N) s = <%s>\n", *s);
+        printf("(Number)\n" "[%d]\n", (*s)->val.number_cmp_in_text);
     #endif
 
-    int val = 0;
-    const char* old_s = *s;
+    Node* new_node = CpyNode(*s);
+    (*s)++;
 
-    while('0' <= **s && **s <= '9')
-    {
-        val = val*10 + **s - '0';
-        (*s)++;
-    }
-
-    CheckSyntaxError(*s != old_s, *s);
-    Node* new_node = NodeCtorNum(val);
+    CheckSyntaxError(IS_NUM(new_node), new_node);
 
     #ifdef DEBUG
-        printf("end N\n");
+        printf("end Number\n");
     #endif
 
     return new_node;

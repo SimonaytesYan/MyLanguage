@@ -2,7 +2,6 @@
 
 #include "InAndOut.h"
 #include "../ResursiveDescent/RecursiveDescent.h"
-#include "../LatexOutput/LatexOutput.h"
 
 void GetDataFromFile(const char* file_name, FileStruct* data_from_file)
 {
@@ -23,45 +22,70 @@ void GetDataFromFile(const char* file_name, FileStruct* data_from_file)
     fclose(fp);
 }
 
-int GetTreeFromFile(Tree* tree, const char file_name[])
+void PrintElem(FILE* fp, Node* node)
 {
-    assert(tree);
-
-    ReturnIfError(TreeCheck(tree));
-
-    FILE* fp = fopen(file_name, "r");
-    CHECK(fp == nullptr, "Error during open file", -1);
-
-    char function[101] = "";
-    fgets(function, 100, fp);
-    fclose(fp);
-
-    printf("function = <%s>\n", function);
-
-    tree->root = GetNodeFromStr(function);
-
-    return 0;
-}
-
-int SaveTreeInFile(Tree* tree, FILE* fp)
-{
-    ReturnIfError(TreeCheck(tree));
-    CHECK(fp == nullptr, "fp = nullptr", -1);
-
-    PrintElemDFS(fp, tree->root);
+    fprintf(fp, "node_p = %p\n", node);
+    switch (TYPE(node))
+    {
+        case TYPE_NUM:
+        {
+            fprintf(fp, "Type = NUM\n");
+            fprintf(fp, "val = %d\n", VAL_N(node));
+            break;
+        }
+        case TYPE_OP:
+        {
+            fprintf(fp, "Type = OP\n");
+            break;
+        }
+        case TYPE_VAR:
+        {
+            fprintf(fp, "Type = VAR\n");
+            fprintf(fp, "val = <%s>\n", VAL_VAR(node));
+            break;
+        }
+        case TYPE_SYMB:
+        {
+            fprintf(fp, "Type = SYMB\n");
+            fprintf(fp, "val = %c\n", VAL_SYMB(node));
+            break;
+        }
+        case UNDEF_NODE_TYPE:
+        {
+            fprintf(fp, "Type = UNDEF\n");
+            break;
+        }
+        default:
+            fprintf(fp, "Type = Unknown\n");
+            break;
+    }
+    fprintf(fp, "type = %d");
 
     fflush(fp);
-
-    return 0;
 }
 
 void PrintElemInLog(Node_t elem)
 {
-    LogPrintf("type = %d\n" "{\n", elem.type);
-    LogPrintf("\tdbl  = %lg\n", elem.val.dbl);
-    LogPrintf("\top   = %d\n", elem.val.op);
-    LogPrintf("\tvar  = <%s?\n", elem.val.var);
-    LogPrintf("}\n");
+    LogPrintf("type = %d\n", elem.type);
+    switch (elem.type)
+    {
+    case TYPE_NUM:
+        LogPrintf("\tdbl  = %lg\n", elem.val.dbl);
+        break;
+    case TYPE_OP:
+        LogPrintf("\top   = %d\n", elem.val.op);
+        break;
+    case TYPE_VAR:
+        LogPrintf("\tvar  = <%s>\n", elem.val.var);
+        break;
+    case TYPE_KEYWORD:
+        LogPrintf("\tkeyword = <%s>\n", elem.val.keyword);
+        break;
+    case TYPE_SYMB:
+        LogPrintf("\t symb = <%c>%d\n", elem.val.symb, elem.val.symb);
+    default:
+        break;
+    }
 }
 
 void OutputGraphicDump(Tree* tree)

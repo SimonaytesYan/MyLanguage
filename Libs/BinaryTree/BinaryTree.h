@@ -48,6 +48,8 @@ static int   NodeCtor(Node* node, Node_t val);
 
 static Node  _NodeCtorNum(double val);
 
+static Node  _NodeCtorSymb(int val);
+
 static Node  _NodeCtorOp(OPER_TYPES val);
 
 static Node  _NodeCtorVar(const char* val);
@@ -98,6 +100,9 @@ static void EquateNode(Node* node_a, Node* node_b)
 
     switch (TYPE(node_b))
     {
+    case TYPE_SYMB:
+        
+        break;
     case TYPE_NUM:
         VAL_N(node_a) = VAL_N(node_b);
         break;
@@ -187,48 +192,21 @@ static void WriteNodeAndEdge(Node* node, void* fp_void)
                      node,                                                                      node);
     switch (node->val.type)
     {
+    case TYPE_SYMB:
+        fprintf(fp, "SYMB | [%c]%d", VAL_SYMB(node), VAL_SYMB(node));
+        break;
     case TYPE_NUM:
-        fprintf(fp, "NUM | %lf", node->val.val.dbl);
+        fprintf(fp, "NUM | %lf", VAL_N(node));
         break;
     case TYPE_OP:
         fprintf(fp, "OPER | ");
-        switch(node->val.val.op)
-        {
-            case OP_COS:
-                fprintf(fp, "cos");
-                break;
-            case OP_SIN:
-                fprintf(fp, "sin");
-                break;
-            case OP_PLUS:
-                fprintf(fp, "+");
-                break;
-            case OP_SUB:
-                fprintf(fp, "-");
-                break;
-            case OP_MUL:
-                fprintf(fp, "*");
-                break;
-            case OP_DIV:
-                fprintf(fp, "/");
-                break;
-            case OP_LOG:
-                fprintf(fp, "log");
-                break;
-            case OP_POW:
-                fprintf(fp, "**");
-                break;
-            case UNDEF_OPER_TYPE:
-                fprintf(fp, "?");
-                break;
-            default:
-                fprintf(fp, "#");
-                break;
-        }
+        fprintOper
         break;
     case TYPE_VAR:
-        fprintf(fp, "VAR | %s ", node->val.val.var);
+        fprintf(fp, "VAR | %s ", VAL_VAR(node));
         break;
+    case TYPE_KEYWORD:
+        fprintf(fp, "KEYWORD", VAL_KEYWORD(node));
     case UNDEF_NODE_TYPE:
         fprintf(fp, "UNDEF");
         break;
@@ -284,7 +262,7 @@ static void GraphicDump(Tree* tree)
     GRAPHIC_DUMP_CNT++;
 }
 
-#define DUMP_L(tree) DumpTree(tree, __PRETTY_FUNCTION__, __FILE__, __LINE__)
+#define DUMP_T(tree) DumpTree(tree, __PRETTY_FUNCTION__, __FILE__, __LINE__)
 
 static void DumpTree(Tree* tree, const char* function, const char* file, int line)
 {
@@ -295,7 +273,7 @@ static void DumpTree(Tree* tree, const char* function, const char* file, int lin
     if (tree == nullptr) 
         return;
 
-    LogPrintf("Stack[%p] ", tree);
+    LogPrintf("Tree[%p] ", tree);
 
     if (tree->debug.name != nullptr)
         LogPrintf("\"%s\"", tree->debug.name);
@@ -323,6 +301,8 @@ static void DumpTree(Tree* tree, const char* function, const char* file, int lin
                             LogPrintf(")");
                         };
 
+    LogPrintf("Tree->root = %p\n", tree->root);
+
     DFS(tree->root, pre_function,  nullptr,
                     nullptr,       nullptr,
                     post_function, nullptr);
@@ -337,9 +317,6 @@ static int TreeCheck(Tree* tree)
         error |= NULL_TREE_POINTER;
     else
     {
-        if (tree->root == nullptr)
-            error |= NULL_POINTER_TO_ROOT;
-        
         if (tree->debug.file     == nullptr) error |= DEBUG_FILE_DAMAGED;
         if (tree->debug.function == nullptr) error |= DEBUG_FUNCTION_DAMAGED;
         if (tree->debug.name     == nullptr) error |= DEBUG_NAME_DAMAGED;
@@ -382,6 +359,31 @@ static int NodeCtor(Node* node, Node_t val)
     return 0;
 }
 
+static Node* NodeCtorFict()
+{
+    Node* new_node = (Node*)calloc(1, sizeof(Node));
+
+    Node_t node_val = {};
+    node_val.type   = TYPE_FICT;
+
+    NodeCtor(new_node, node_val);
+
+    return new_node;
+}
+
+static Node* NodeCtorSymb(int val)
+{
+    Node* new_node = (Node*)calloc(1, sizeof(Node));
+
+    Node_t node_val   = {};
+    node_val.type     = TYPE_SYMB;
+    node_val.val.symb = val;
+
+    NodeCtor(new_node, node_val);
+
+    return new_node;
+}
+
 static Node* NodeCtorNum(double val)
 {
     Node* new_node = (Node*)calloc(1, sizeof(Node));
@@ -419,6 +421,18 @@ static Node* NodeCtorOp(OPER_TYPES val)
     node_val.val.op  = val;
 
     NodeCtor(new_node, node_val);
+
+    return new_node;
+}
+
+static Node  _NodeCtorSymb(int val)
+{
+    Node new_node    = {};
+
+    new_node.val.type     = TYPE_SYMB;
+    new_node.val.val.symb = val;
+    new_node.left         = nullptr;
+    new_node.right        = nullptr;
 
     return new_node;
 }
@@ -516,8 +530,8 @@ static Node* CpyNode(Node* node)
         return nullptr;
     
     #ifdef DEBUG
-        PrintElem(stdout, node);
-        printf(" node = %p\nleft = %p\nright = %p\n", node, L(node), R(node));
+        PrintElemInLog(node->val);
+        LogPrintf(" node = %p\nleft = %p\nright = %p\n", node, L(node), R(node));
     #endif
 
     Node* new_node = (Node*)calloc(1, sizeof(Node));

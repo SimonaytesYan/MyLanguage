@@ -2,7 +2,7 @@
 
 #include "RecursiveDescent.h"
 
-#include "../TreeSetup.h"
+#include "../Setup.h"
 
 const int TESTS_NUMBER = 15;
 
