@@ -28,8 +28,8 @@ enum OPER_TYPES
     OP_MUL          = 3,
     OP_DIV          = 4,
     OP_POW          = 5,
-//    OP_IN           = 6,
-//    OP_OUT          = 7,
+    OP_IN           = 6,
+    OP_OUT          = 7,
 //    OP_IS_EQ        = 8,
 //    OP_IS_B         = 9,
 //    OP_IS_S         = 10,
@@ -71,7 +71,7 @@ struct Keyword_t
 
 const int MAX_VAR_SIZE      = 20;
 
-const int STD_OPERATORS_NUM = 6;
+const int STD_OPERATORS_NUM = 8;
 
 const Operator_t STD_OPERATORS[] = {
                                     {"+", OP_PLUS},
@@ -79,6 +79,8 @@ const Operator_t STD_OPERATORS[] = {
                                     {"*", OP_MUL},
                                     {"/", OP_DIV},
                                     {"^", OP_POW},
+                                    {"in", OP_IN},
+                                    {"out", OP_OUT},
                                     {"=", OP_EQ}
                                    };
 

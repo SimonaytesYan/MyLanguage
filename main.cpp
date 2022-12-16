@@ -10,6 +10,8 @@ const char ASM_FILE_NAME[]     = "Main.sy";
 
 static void Program_tDtor(Program_t program);
 
+static void GraphicDumpComands(Program_t program);
+
 int main()
 {
     printf("Start main\n");
@@ -17,6 +19,8 @@ int main()
 
     Program_t program = {};
     program.comands = GetProgramFromFile(PROGRAM_FILE_NAME, &program.comands_num);
+
+    GraphicDumpComands(program);
 
     Tree lang_tree = {};
     TreeCtor(&lang_tree);
@@ -31,6 +35,27 @@ int main()
 
     Program_tDtor(program);
     printf("End main\n");
+}
+
+static void GraphicDumpComands(Program_t program)
+{
+    Tree comands = {};
+    TreeCtor(&comands);
+    comands.root = program.comands;
+
+    for(int i = 0; i < program.comands_num - 1; i++)
+    {
+        program.comands[i].right = &program.comands[i+1];
+        program.comands[i].left = nullptr;
+    }
+    DUMP_T(&comands);
+    GraphicDump(&comands);
+
+    for(int i = 0; i < program.comands_num; i++)
+    {
+        program.comands[i].right = nullptr;
+        program.comands[i].left = nullptr;
+    }
 }
 
 static void Program_tDtor(Program_t program)

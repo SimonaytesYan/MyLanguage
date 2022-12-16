@@ -10,9 +10,10 @@ static Node* last_comand = 0;
 //Grammar   ::= CreateVar* {Equal | {PlusMinus ';'}}+
 //CreateVar ::= "var"V ';'
 //Equal     ::= V '=' PlusMinus ';'
-//PlusMinus ::= MulDiv{['+','-']T}*
-//MulDiv    ::= POW{['*','/']POW}*
-//Pow       ::= Breakets {"^" POW}*
+//PlusMinus ::= MulDiv{['+','-']MulDiv}*
+//MulDiv    ::= InOut{['*','/']InOut}*
+//InOut     ::= "in" | "out" PlusMinus | Pow
+//Pow       ::= Brackets {"^" Pow}*
 //Brackets  ::= '('PlusMinus')' | Var | Num
 //Var       ::= ['a'-'z','0'-'9','_']
 //Number    ::= ['0'-'9']+
@@ -32,6 +33,8 @@ static Node* GetEqual(Node** ip);
 static Node* GetPlusMinus(Node** s);
 
 static Node* GetMulDiv(Node** s);
+
+static Node* GetInOut(Node** s);
 
 static Node* GetPow(Node** s);
 
@@ -223,7 +226,7 @@ static Node* GetMulDiv(Node** s)
                                           (*s)->val.number_cmd_in_text);
     #endif
 
-    Node* val = GetPow(s);
+    Node* val = GetInOut(s);
     if (val == nullptr) return nullptr;
 
     #ifdef DEBUG
@@ -236,7 +239,7 @@ static Node* GetMulDiv(Node** s)
         Node* op = CpyNode(*s);
         (*s)++;
 
-        Node* right_node = GetPow(s);
+        Node* right_node = GetInOut(s);
         if (right_node == nullptr) return nullptr;
         
         op->left  = val;
@@ -249,6 +252,39 @@ static Node* GetMulDiv(Node** s)
     #endif
 
     return val;
+}
+
+static Node* GetInOut(Node** s)
+{
+    if (*s == nullptr || *s >= last_comand)
+        return nullptr;
+    #ifdef DEBUG
+        printf("(InOut)\n" "[%d][%d]\n", (*s)->val.number_cmd_line_in_text,
+                                         (*s)->val.number_cmd_in_text);
+    #endif
+
+    Node* new_node = nullptr;
+    if (IS_OP(*s) && VAL_OP(*s) == OP_IN)
+    {
+        new_node = CpyNode(*s);
+        (*s)++;
+        CheckSyntaxError(IS_VAR(*s), *s, nullptr);
+        R(new_node) = CpyNode(*s);
+        (*s)++;
+        return new_node;
+    }
+    else if (IS_OP(*s) && VAL_OP(*s) == OP_OUT)
+    {
+        printf("START OUT\n");
+        new_node = CpyNode(*s);
+        (*s)++;
+        R(new_node) = GetPlusMinus(s);
+        return new_node;
+    }
+    
+    printf("There isnt in and out\n");
+    new_node = GetPow(s);
+    return new_node;
 }
 
 static Node* GetPow(Node** s)

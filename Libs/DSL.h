@@ -68,6 +68,12 @@ const double PRECISION = 1e-6;
         case OP_POW:            \
             fprintf(fp, "^");   \
             break;              \
+        case OP_IN:             \
+            fprintf(fp, "in");  \
+            break;              \
+        case OP_OUT:            \
+            fprintf(fp, "out"); \
+            break;              \
         case OP_EQ:             \
             fprintf(fp, "=");   \
             break;              \
