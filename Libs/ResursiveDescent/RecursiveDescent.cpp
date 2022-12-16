@@ -7,12 +7,13 @@ static Node* last_comand = 0;
 #define DEBUG
 
 //----------------------------
-//Grammar   ::= CreateVar* {Equal | {PlusMinus ';'}}+
-//CreateVar ::= "var"V ';'
+//Grammar   ::= CreateVar* {In | Equal | {PlusMinus ';'}}+
+//CreateVar ::= "var" V ';'
+//In        ::= "in" V ';'
 //Equal     ::= V '=' PlusMinus ';'
 //PlusMinus ::= MulDiv{['+','-']MulDiv}*
-//MulDiv    ::= InOut{['*','/']InOut}*
-//InOut     ::= "in" | "out" PlusMinus | Pow
+//MulDiv    ::= Out{['*','/']Out}*
+//Out       ::= "out" PlusMinus | Pow
 //Pow       ::= Brackets {"^" Pow}*
 //Brackets  ::= '('PlusMinus')' | Var | Num
 //Var       ::= ['a'-'z','0'-'9','_']
@@ -28,13 +29,15 @@ Node* CreateNodeWithChild_Op(Node* left_node, Node* right_node, OPER_TYPES op);
 
 static Node* GetCreateVar(Node** ip);
 
+static Node* GetIn(Node** ip);
+
 static Node* GetEqual(Node** ip);
 
 static Node* GetPlusMinus(Node** s);
 
 static Node* GetMulDiv(Node** s);
 
-static Node* GetInOut(Node** s);
+static Node* GetOut(Node** s);
 
 static Node* GetPow(Node** s);
 
@@ -96,15 +99,18 @@ Node* GetNodeFromComands(Node* program)
 
     while (true)
     {
-        new_node = GetEqual(&program);
+        new_node = GetIn(&program);
         if (new_node == nullptr)
         {
-            printf("-------------try get plus minus");
-            new_node = GetPlusMinus(&program);
+            new_node = GetEqual(&program);
             if (new_node == nullptr)
-                break;
-            CheckSyntaxError(IS_SYMB(program) && VAL_SYMB(program) == ';', program, nullptr);
-            program++;
+            {
+                new_node = GetPlusMinus(&program);
+                if (new_node == nullptr)
+                    break;
+                CheckSyntaxError(IS_SYMB(program) && VAL_SYMB(program) == ';', program, nullptr);
+                program++;
+            }
         }
         
         R(val) = new_node;
@@ -112,8 +118,6 @@ Node* GetNodeFromComands(Node* program)
         L(new_node) = val;
         R(new_node) = nullptr;
         val = new_node;
-
-        printf("---------------------------End while\n");
     }
     
     #ifdef DEBUG
@@ -153,6 +157,28 @@ static Node* GetCreateVar(Node** ip)
         }
     }
 
+    return new_node;
+}
+
+static Node* GetIn(Node** ip)
+{
+    #ifdef DEBUG
+        printf("(In)\n");
+    #endif
+    if (*ip == nullptr || *ip >= last_comand)
+        return nullptr;
+
+    Node* new_node = nullptr;
+    if (IS_OP(*ip) && VAL_OP(*ip) == OP_IN)
+    {
+        new_node = CpyNode(*ip);
+        (*ip)++;
+        CheckSyntaxError(IS_VAR(*ip), *ip, nullptr);
+        R(new_node) = CpyNode(*ip);
+        (*ip)++;
+        CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ';', *ip, nullptr);
+        (*ip)++;
+    }
     return new_node;
 }
 
@@ -226,7 +252,7 @@ static Node* GetMulDiv(Node** s)
                                           (*s)->val.number_cmd_in_text);
     #endif
 
-    Node* val = GetInOut(s);
+    Node* val = GetOut(s);
     if (val == nullptr) return nullptr;
 
     #ifdef DEBUG
@@ -239,7 +265,7 @@ static Node* GetMulDiv(Node** s)
         Node* op = CpyNode(*s);
         (*s)++;
 
-        Node* right_node = GetInOut(s);
+        Node* right_node = GetOut(s);
         if (right_node == nullptr) return nullptr;
         
         op->left  = val;
@@ -254,26 +280,17 @@ static Node* GetMulDiv(Node** s)
     return val;
 }
 
-static Node* GetInOut(Node** s)
+static Node* GetOut(Node** s)
 {
     if (*s == nullptr || *s >= last_comand)
         return nullptr;
     #ifdef DEBUG
-        printf("(InOut)\n" "[%d][%d]\n", (*s)->val.number_cmd_line_in_text,
+        printf("(Out)\n" "[%d][%d]\n", (*s)->val.number_cmd_line_in_text,
                                          (*s)->val.number_cmd_in_text);
     #endif
 
     Node* new_node = nullptr;
-    if (IS_OP(*s) && VAL_OP(*s) == OP_IN)
-    {
-        new_node = CpyNode(*s);
-        (*s)++;
-        CheckSyntaxError(IS_VAR(*s), *s, nullptr);
-        R(new_node) = CpyNode(*s);
-        (*s)++;
-        return new_node;
-    }
-    else if (IS_OP(*s) && VAL_OP(*s) == OP_OUT)
+    if (IS_OP(*s) && VAL_OP(*s) == OP_OUT)
     {
         printf("START OUT\n");
         new_node = CpyNode(*s);

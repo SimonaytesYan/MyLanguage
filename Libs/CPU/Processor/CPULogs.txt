@@ -1,4 +1,18 @@
-In int GetExecFileFromCLArgs(FILE**, int, char**) in Processor\Processor.cpp(49)
+Stack = 000000000065ED00
+Chech status = 2108
+At size_t ChangeStackData(Stack*, size_t) in Processor\..\Libs\ComandSystem\..\Stack.h(414)
+Negative or poison size
+Negative or poison capacity
+Size is bigger then capacity
+Pointer to stack.data = nullptr
+Bebug info from stack damaged
 
-Wrong number of cmd arguments
-In int main(int, char**) in Processor\main.cpp(5)
+Stack = 000000000065ED58
+Chech status = 2108
+At size_t ChangeStackData(Stack*, size_t) in Processor\..\Libs\ComandSystem\..\Stack.h(414)
+Negative or poison size
+Negative or poison capacity
+Size is bigger then capacity
+Pointer to stack.data = nullptr
+Bebug info from stack damaged
+

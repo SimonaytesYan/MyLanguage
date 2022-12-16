@@ -87,7 +87,7 @@ int PutVar(Node* node, FILE* output_file)
 int PutOperator(Node* node, FILE* output_file)
 {
     printf("start operator\n");
-    if (VAL_OP(node) != OP_EQ)
+    if (IS_PLUS(node) || IS_SUB(node) || IS_DIV(node) || IS_MUL(node))
     {
         PutNodeInFile(L(node), output_file);
         PutNodeInFile(R(node), output_file);
@@ -107,6 +107,25 @@ int PutOperator(Node* node, FILE* output_file)
         case OP_DIV:
             fprintf(output_file, "sub\n");
             break;
+        case OP_OUT:\
+        {
+            PutNodeInFile(R(node), output_file);
+            fprintf(output_file, "out\n");
+            break;
+        }
+        case OP_IN:
+        {
+            CheckSyntaxError(R(node) != nullptr, node, -1);
+            CheckSyntaxError(IS_VAR(R(node)), R(node), -1);
+
+            int index = GetVarIndex(VAL_VAR(R(node)));
+            if (index == -1)
+                return -1;
+
+            fprintf(output_file, "in\n");       
+            fprintf(output_file, "pop [%d]\n", index);     
+            break;
+        }
         case OP_EQ:
         {
             printf("Equal\n");
