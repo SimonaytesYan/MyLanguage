@@ -3,8 +3,11 @@ C_FLAGS   = -D _DEBUG -ggdb3 -std=c++2a -O0 -Wall -Wextra -Weffc++ -Waggressive-
 #windows:
 #C_FLAGS = -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Weffc++ -Wmain -Wextra -Wall -g -pipe -fexceptions -Wcast-qual -Wconversion -Wctor-dtor-privacy -Wempty-body -Wformat-security -Wformat=2 -Wignored-qualifiers -Wlogical-op -Wno-missing-field-initializers -Wnon-virtual-dtor -Woverloaded-virtual -Wpointer-arith -Wsign-promo -Wstack-usage=8192 -Wstrict-aliasing -Wstrict-null-sentinel -Wtype-limits -Wwrite-strings -Werror=vla -D_DEBUG -D_EJUDGE_CLIENT_SIDE
 
-all: logging recursive_descent in_and_out lexical_analis
-	g++ main.cpp Obj/LexicalAnalysis.o Obj/Logging.o Obj/RecursiveDescent.o Obj/InAndOut.o $(C_FLAGS) -o Exe/Start.exe
+all: logging recursive_descent in_and_out lexical_analis back_end
+	g++ main.cpp Obj/LexicalAnalysis.o Obj/Logging.o Obj/RecursiveDescent.o Obj/InAndOut.o Obj/Backend.o $(C_FLAGS) -o Exe/Start.exe
+
+back_end: logging in_and_out
+	g++ -c Libs/CreateAssembler/CreateAssembler.cpp Obj/Logging.o Obj/InAndOut.o $(C_FLAGS) -o Obj/Backend.o
 
 recursive_descent: in_and_out
 	g++ -c Libs/ResursiveDescent/RecursiveDescent.cpp Obj/InAndOut.o Obj/Logging.o $(C_FLAGS) -o Obj/RecursiveDescent.o

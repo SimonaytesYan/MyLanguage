@@ -53,6 +53,6 @@ int ArgToInt(char* char_arg, int* comand, int* arg, int line);
 
 int PutArgsAndCmdInArray(const char* args, int* comands, int* comand_index, int comand_type, int line);
 
-int PutJmpArgsAndCmdInArray(StdArgStruct f_args, int comp_number, const char** text, int number_few_char, Label* labels);
+int PutJmpArgsAndCmdInArray(StdArgStruct* f_args,int comp_number, const char** text, int number_few_char, Label* labels);
 
 #endif //__ASSEMBLER_SYM__

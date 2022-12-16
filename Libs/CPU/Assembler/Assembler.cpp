@@ -273,7 +273,7 @@ int PutJmpArgsAndCmdInArray(StdArgStruct* f_args,int comp_number, const char** t
                                     num,                                                        \
                                     line};                                                      \
                                                                                                 \
-            PutJmpArgsAndCmdInArray(f_args, comp_number, text, number_few_char, labels);        \
+            PutJmpArgsAndCmdInArray(&f_args, comp_number, text, number_few_char, labels);        \
         }                                                                                       \
         else                                                                                    \
         {                                                                                       \

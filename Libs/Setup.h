@@ -48,7 +48,7 @@ struct Node_t
     union
     {
         int           symb = 0;
-        double        dbl;
+        int           dbl;
         OPER_TYPES    op;
         char*         var;
         KEYWORD_TYPES keyword;

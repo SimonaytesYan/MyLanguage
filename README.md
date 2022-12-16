@@ -1,0 +1,1 @@
+In Var keyword node Variable is always in right node

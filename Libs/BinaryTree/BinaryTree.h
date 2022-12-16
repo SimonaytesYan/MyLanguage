@@ -197,7 +197,7 @@ static void WriteNodeAndEdge(Node* node, void* fp_void)
             fprintf(fp, "SYMB | [%c]%d", VAL_SYMB(node), VAL_SYMB(node));
             break;
         case TYPE_NUM:
-            fprintf(fp, "NUM | %lf", VAL_N(node));
+            fprintf(fp, "NUM | %d", VAL_N(node));
             break;
         case TYPE_OP:
             fprintf(fp, "OPER | ");

@@ -23,18 +23,6 @@ static Node* last_comand = 0;
 //-: -5; +7; -19*7; x + u15; 17l; x + y - ; kl; A
 //----------------------------
 
-#define CheckSyntaxError(cond, node)                                                                    \
-    if (!(cond))                                                                                        \
-    {                                                                                                   \
-        LogPrintf("Syntax error in line %ld symbol %ld: %s\n",                                          \
-                                        (node)->val.number_cmd_line_in_text,                            \
-                                        (node)->val.number_cmd_in_text, #cond);                         \
-        fprintf(stderr, "Syntax error in line %ld symbol %ld: %s\n",                                    \
-                                              (node)->val.number_cmd_line_in_text,                      \
-                                              (node)->val.number_cmd_in_text, #cond);                   \
-        return nullptr;                                                                                 \
-    }
-
 Node* CreateNodeWithChild_Op(Node* left_node, Node* right_node, OPER_TYPES op);
 
 static Node* GetCreateVar(Node** ip);
@@ -112,7 +100,7 @@ Node* GetNodeFromComands(Node* program)
             new_node = GetPlusMinus(&program);
             if (new_node == nullptr)
                 break;
-            CheckSyntaxError(IS_SYMB(program) && VAL_SYMB(program) == ';', program);
+            CheckSyntaxError(IS_SYMB(program) && VAL_SYMB(program) == ';', program, nullptr);
             program++;
         }
         
@@ -149,7 +137,7 @@ static Node* GetCreateVar(Node** ip)
             {
                 (*ip)++;
                 new_node = GetVar(ip);
-                CheckSyntaxError((IS_SYMB(*ip) && VAL_SYMB(*ip) == ';'), *ip);
+                CheckSyntaxError((IS_SYMB(*ip) && VAL_SYMB(*ip) == ';'), *ip, nullptr);
                 (*ip)++;
                 break;
             }
@@ -176,13 +164,13 @@ static Node* GetEqual(Node** ip)
     Node* var = GetVar(ip);
     if (var == nullptr) return nullptr;
 
-    CheckSyntaxError(IS_OP(*ip) && VAL_OP(*ip) == OP_EQ, *ip)
+    CheckSyntaxError(IS_OP(*ip) && VAL_OP(*ip) == OP_EQ, *ip, nullptr)
     
     Node* new_node = CpyNode(*ip);
     L(new_node) = var;
     (*ip)++;
     R(new_node) = GetPlusMinus(ip);
-    CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ';', *ip);
+    CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ';', *ip, nullptr);
     (*ip)++;
 
     if (R(new_node) == nullptr)
@@ -305,7 +293,7 @@ static Node* GetBrackets(Node** s)
         val = GetPlusMinus(s);
         if (val == nullptr) return nullptr;
 
-        CheckSyntaxError(IS_SYMB(*s) && VAL_SYMB(*s) == ')', *s);
+        CheckSyntaxError(IS_SYMB(*s) && VAL_SYMB(*s) == ')', *s, nullptr);
         (*s)++;
     }
     else if (IS_VAR(*s))
@@ -369,7 +357,7 @@ static Node* GetNumber(Node** s)
     Node* new_node = CpyNode(*s);
     (*s)++;
 
-    CheckSyntaxError(IS_NUM(new_node), new_node);
+    CheckSyntaxError(IS_NUM(new_node), new_node, nullptr);
 
     #ifdef DEBUG
         printf("end Number\n");

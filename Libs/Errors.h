@@ -16,6 +16,10 @@ enum ErrorCodes
     DEBUG_LINE_DAMAGED           = 1<<7,
     DEBUG_NAME_DAMAGED           = 1<<8,
     NULL_POINTER_TO_ROOT         = 1<<9,
+    NULL_LIST_POINTER            = 1<<10,
+    DAMAGED_DATA                 = 1<<11,
+    WRONG_HEAD                   = 1<<12,
+    WRONG_TAIL                   = 1<<13,
 };
 
 const char* const ERROR_DESCRIPTION[] = { "Pointer to tree = nullptr\n",
