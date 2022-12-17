@@ -17,6 +17,13 @@ void PrintStackElemInLog(ListElem_t val)
 
 static List VARS = {};
 
+int LabelCounter()
+{
+    static int cnt = 0;
+    cnt++;
+    return cnt;
+}
+
 int AddVar(const char* var);
 
 int GetVarIndex(const char* var);
@@ -24,6 +31,8 @@ int GetVarIndex(const char* var);
 int PutVar(Node* node, FILE* output_file);
 
 int PutNodeInFile(Node* node, FILE* output_file);
+
+int PutKeyword(Node* node, FILE* output_file);
 
 //!-----------------
 //!@return error code
@@ -148,6 +157,43 @@ int PutOperator(Node* node, FILE* output_file)
     return 0;
 }
 
+int PutKeyword(Node* node, FILE* output_file)
+{
+
+    switch (VAL_KEYWORD(node))
+    {
+        case KEYWORD_VAR:
+        {
+            CheckSyntaxError(L(node) != nullptr && IS_VAR(L(node)), L(node), -1);
+            printf("add var <%s>\n", VAL_VAR(L(node)));
+            ReturnIfError(AddVar(VAL_VAR(L(node))));
+            break;
+        }
+        case KEYWORD_IF:
+        {
+            int else_label     = LabelCounter();
+            int end_else_label = LabelCounter();
+
+            CheckSyntaxError(L(node) != nullptr, L(node), -1);     
+            PutNodeInFile(L(node), output_file);                    //cond
+            fprintf(output_file, "push 0\n");
+            fprintf(output_file, "je label%d\n", else_label);       //go to else branch
+
+            PutNodeInFile(RL(node), output_file);                   //true branch
+            fprintf(output_file, "jmp label%d\n", end_else_label);  //skip else branch
+
+            fprintf(output_file, "label%d\n", else_label);          //else branch
+            PutNodeInFile(RR(node), output_file);                   
+            fprintf(output_file, "label%d\n", end_else_label);
+
+            break;
+        }
+    
+        default:
+            break;
+    }
+}
+
 int PutNodeInFile(Node* node, FILE* output_file)
 {
     if (node == nullptr)
@@ -175,19 +221,7 @@ int PutNodeInFile(Node* node, FILE* output_file)
         }
         case TYPE_KEYWORD:
         {
-            switch (VAL_KEYWORD(node))
-            {
-                case KEYWORD_VAR:
-                {
-                    CheckSyntaxError(L(node) != nullptr && IS_VAR(L(node)), L(node), -1);
-                    printf("add var <%s>\n", VAL_VAR(L(node)));
-                    ReturnIfError(AddVar(VAL_VAR(L(node))));
-                    break;
-                }
-            
-            default:
-                break;
-            }
+            ReturnIfError(PutKeyword(node, output_file));
             break;
         }
         case TYPE_OP:

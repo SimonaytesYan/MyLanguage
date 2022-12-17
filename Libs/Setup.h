@@ -3,6 +3,8 @@
 
 #include <cstddef>
 
+#define DEBUG
+
 enum NODE_TYPES
 {
     UNDEF_NODE_TYPE = -1,
@@ -18,6 +20,8 @@ enum KEYWORD_TYPES
 {
     UNDEF_KEYWORD_TYPE = 0,
     KEYWORD_VAR        = 1,
+    KEYWORD_IF         = 2,
+    KEYWORD_THEN       = 3,
 };
 
 enum OPER_TYPES
@@ -84,10 +88,12 @@ const Operator_t STD_OPERATORS[] = {
                                     {"=", OP_EQ}
                                    };
 
-const int KEYWORDS_NUM = 1;
+const int KEYWORDS_NUM = 3;
 
 const Keyword_t KEYWORDS[] = {
                                 {"var", KEYWORD_VAR},
+                                {"if", KEYWORD_IF},
+                                {"then", KEYWORD_THEN},
                              };
 
 void PrintElemInLog(Node_t elem);
