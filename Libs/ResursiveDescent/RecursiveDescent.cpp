@@ -9,7 +9,7 @@ static Node* last_comand = 0;
 //----------------------------
 //Grammar   ::= Scope
 //Scope     ::= CreateVar* {If | Equal | {PlusMinus ';'}}+
-//If        ::= {"if" PlusMinus "then"} PlusMinus
+//If        ::= {"if" PlusMinus "then"} PlusMinus {"else" PlusMinus}?
 //CreateVar ::= "var" V ';'
 //Equal     ::= V '=' PlusMinus ';'
 //PlusMinus ::= MulDiv{['+','-']MulDiv}*
@@ -25,6 +25,10 @@ static Node* last_comand = 0;
 //+: x^2; x^x^x; y+sin(x^2); 14+99; 5*x; x; 2 + x*(3 + 4542/2) - y; sin(sin(x)); y + sin(a * cos(log(1))) 
 //-: -5; +7; -19*7; x + u15; 17l; x + y - ; kl; A
 //----------------------------
+
+#define IterIp(ip, return_val)                                  \
+        (*ip)++;                                                \
+        if ((*ip) >= last_comand) return return_val;            \
 
 Node* CreateNodeWithChild_Op(Node* left_node, Node* right_node, OPER_TYPES op);
 
@@ -150,25 +154,33 @@ static Node* GetIf(Node** ip)
     if (ip == nullptr || *ip == nullptr || *ip >= last_comand)
         return nullptr;
 
-    Node* new_node = nullptr;
+    Node* val = nullptr;
     if (IS_KEYWORD(*ip) && VAL_KEYWORD(*ip) == KEYWORD_IF)
     {
-        new_node    = NodeCtorKeyword(KEYWORD_IF); 
+        val    = NodeCtorKeyword(KEYWORD_IF); 
         (*ip)++;
-        L(new_node) = GetPlusMinus(ip);     //!condition
+        L(val) = GetPlusMinus(ip);     //!condition
         CheckSyntaxError(IS_KEYWORD(*ip) && (VAL_KEYWORD(*ip) == KEYWORD_THEN), *ip, nullptr);
         (*ip)++;
 
-        R(new_node)  = NodeCtorFict();
-        RL(new_node) = GetPlusMinus(ip);        //!true branch
+        R(val)  = NodeCtorFict();
+        RL(val) = GetPlusMinus(ip);                                                         //!true branch
         CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ';', *ip, nullptr);
         (*ip)++;
+
+        if((*ip) < last_comand && IS_KEYWORD(*ip) && VAL_KEYWORD(*ip) == KEYWORD_ELSE)     //!else branch
+        {
+            (*ip)++;
+            RR(val) = GetPlusMinus(ip);
+            CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ';', *ip, nullptr);
+            (*ip)++;
+        }
     }
     
     #ifdef DEBUG
         printf("(end if)\n");
     #endif    
-    return new_node;
+    return val;
 }
 
 static Node* GetCreateVar(Node** ip)
