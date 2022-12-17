@@ -167,6 +167,7 @@ int PutKeyword(Node* node, FILE* output_file)
             CheckSyntaxError(L(node) != nullptr && IS_VAR(L(node)), L(node), -1);
             printf("add var <%s>\n", VAL_VAR(L(node)));
             ReturnIfError(AddVar(VAL_VAR(L(node))));
+            return 0;
             break;
         }
         case KEYWORD_IF:
