@@ -23,6 +23,8 @@ enum KEYWORD_TYPES
     KEYWORD_IF         = 2,
     KEYWORD_THEN       = 3,
     KEYWORD_ELSE       = 4,
+    KEYWORD_BEGIN      = 5,
+    KEYWORD_END        = 6,
 };
 
 enum OPER_TYPES
@@ -89,13 +91,15 @@ const Operator_t STD_OPERATORS[] = {
                                     {"=", OP_EQ}
                                    };
 
-const int KEYWORDS_NUM = 4;
+const int KEYWORDS_NUM = 6;
 
 const Keyword_t KEYWORDS[] = {
-                                {"var",  KEYWORD_VAR},
-                                {"if",   KEYWORD_IF},
-                                {"then", KEYWORD_THEN},
-                                {"else", KEYWORD_ELSE},
+                                {"var",   KEYWORD_VAR},
+                                {"if",    KEYWORD_IF},
+                                {"then",  KEYWORD_THEN},
+                                {"else",  KEYWORD_ELSE},
+                                {"begin", KEYWORD_BEGIN},
+                                {"end",   KEYWORD_END},
                              };
 
 void PrintElemInLog(Node_t elem);

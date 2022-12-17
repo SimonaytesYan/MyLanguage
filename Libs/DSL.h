@@ -3,6 +3,9 @@
 
 const double PRECISION = 1e-6;
 
+#define RED           "\033[31m"
+#define DEFAULT_COLOR "\033[0m"
+
 #define CheckSyntaxError(cond, node, return_code)                                                       \
     if (!(cond))                                                                                        \
     {                                                                                                   \
@@ -10,7 +13,7 @@ const double PRECISION = 1e-6;
                                         __LINE__ ,                                                      \
                                         (node)->val.number_cmd_line_in_text,                            \
                                         (node)->val.number_cmd_in_text, #cond);                         \
-        fprintf(stderr, "(%d)Syntax error in line %ld symbol %ld: %s\n",                                \
+        fprintf(stderr, RED "(%d)Syntax error in line %ld symbol %ld: %s\n" DEFAULT_COLOR,              \
                                               __LINE__ ,                                                \
                                               (node)->val.number_cmd_line_in_text,                      \
                                               (node)->val.number_cmd_in_text, #cond);                   \

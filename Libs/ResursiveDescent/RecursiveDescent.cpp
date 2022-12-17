@@ -8,8 +8,8 @@ static Node* last_comand = 0;
 
 //----------------------------
 //Grammar   ::= Scope
-//Scope     ::= CreateVar* {If | Equal | {PlusMinus ';'}}+
-//If        ::= {"if" PlusMinus "then"} PlusMinus {"else" PlusMinus}?
+//Scope     ::= "begin" CreateVar* {If | Equal | {PlusMinus ';'}}+ "end"
+//If        ::= {"if" PlusMinus "then"} Scope {"else" Scope}?
 //CreateVar ::= "var" V ';'
 //Equal     ::= V '=' PlusMinus ';'
 //PlusMinus ::= MulDiv{['+','-']MulDiv}*
@@ -95,6 +95,9 @@ static Node* GetScope(Node** ip)
     if (ip == nullptr || *ip == nullptr || *ip >= last_comand)
         return nullptr;
 
+    CheckSyntaxError(TYPE(*ip) == TYPE_KEYWORD && VAL_KEYWORD(*ip) == KEYWORD_BEGIN, *ip, nullptr);
+    (*ip)++;
+
     Node* val     = nullptr;
     Node* new_var = GetCreateVar(ip);
     if (new_var != nullptr)
@@ -119,6 +122,14 @@ static Node* GetScope(Node** ip)
 
     while (true)
     {
+        if(TYPE(*ip) == TYPE_KEYWORD && VAL_KEYWORD(*ip) == KEYWORD_END)
+        {
+            (*ip)++;
+            #ifdef DEBUG
+                printf("(end scope)\n");
+            #endif
+            return val;
+        }
         new_node = GetIf(ip);
         if (new_node == nullptr)
         {
@@ -143,6 +154,7 @@ static Node* GetScope(Node** ip)
     #ifdef DEBUG
         printf("(end scope)\n");
     #endif
+
     return val;
 }
 
@@ -164,16 +176,12 @@ static Node* GetIf(Node** ip)
         (*ip)++;
 
         R(val)  = NodeCtorFict();
-        RL(val) = GetPlusMinus(ip);                                                         //!true branch
-        CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ';', *ip, nullptr);
-        (*ip)++;
+        RL(val) = GetScope(ip);                                                         //!true branch
 
         if((*ip) < last_comand && IS_KEYWORD(*ip) && VAL_KEYWORD(*ip) == KEYWORD_ELSE)     //!else branch
         {
             (*ip)++;
-            RR(val) = GetPlusMinus(ip);
-            CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ';', *ip, nullptr);
-            (*ip)++;
+            RR(val) = GetScope(ip);
         }
     }
     

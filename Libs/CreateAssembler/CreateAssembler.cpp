@@ -15,7 +15,9 @@ void PrintStackElemInLog(ListElem_t val)
 
 #include "../List/List.h"
 
-static List VARS = {};
+static List VARS   = {};
+
+const ListElem_t FICT_VAR = {"#", 0};
 
 int LabelCounter()
 {
@@ -39,10 +41,17 @@ int PutKeyword(Node* node, FILE* output_file);
 //!------------
 int AddVar(const char* var)
 {
-    for(int i = 1; i <= VARS.size; i++)
+    int index   = 0;
+    int list_end = 0;
+    ListBegin(&VARS, &index);
+    ListEnd(&VARS, &list_end);
+    while (index != -1)
     {
-        if (!strcmp(VARS.data[i].val.name, var))
+        if (!strcmp(VARS.data[index].val.name, var))
             return -1;
+        if (index == list_end)
+            break;
+        ListIterate(&VARS, &index);
     }
     ListElem_t value = {(char*)var, VARS.size};
     ListInsert(&VARS, value, VARS.size);
@@ -55,16 +64,48 @@ int AddVar(const char* var)
     return 0;
 }
 
+void StartScope()
+{
+    ListInsert(&VARS, FICT_VAR, VARS.size);
+}
+
+int EndScope()
+{
+    int begin = 0;
+    ListBegin(&VARS, &begin);
+    int index = 0;
+    ListEnd(&VARS, &index);
+    
+    while (index != -1)
+    {
+        if (strcmp(VARS.data[index].val.name, FICT_VAR.name) == 0)
+        {
+            ListRemove(&VARS, index);
+            return 0;
+        }
+        ListRemove(&VARS, index);
+        ListEnd(&VARS, &index);
+    }
+    return -1;    
+}
+
 //!-----------------
 //!@return index of var in RAM and -1 if var not found
 //!------------
 int GetVarIndex(const char* var)
 {
-    for(int i = 1; i <= VARS.size; i++)
+    int index   = 0;
+    int list_end = 0;
+    ListBegin(&VARS, &index);
+    ListEnd(&VARS, &list_end);
+    while (index != -1)
     {
-        printf("VARS[i] = <%s>\n", VARS.data[i].val.name);
-        if (!strcmp(VARS.data[i].val.name, var))
-            return VARS.data[i].val.index;
+        printf("VARS[i] = <%s>\n", VARS.data[index].val.name);
+        if (!strcmp(VARS.data[index].val.name, var))
+            return VARS.data[index].val.index;
+        if (index == list_end)
+            break;
+        ListIterate(&VARS, &index);
     }
 
     return -1;
@@ -87,7 +128,11 @@ int CreateAsmFromTree(Tree* tree, const char* output_file)
 int PutVar(Node* node, FILE* output_file)
 {
     int index = GetVarIndex(VAL_VAR(node));
-    if (index == -1) return -1;
+    if (index == -1)
+    {
+        printf(RED "Unknown var <%s>\n" DEFAULT_COLOR, VAL_VAR(node));
+        CheckSyntaxError(0, node, -1);
+    }
 
     fprintf(output_file, "push [%d]\n", index);
     return 0;
@@ -116,7 +161,7 @@ int PutOperator(Node* node, FILE* output_file)
         case OP_DIV:
             fprintf(output_file, "sub\n");
             break;
-        case OP_OUT:\
+        case OP_OUT:
         {
             PutNodeInFile(R(node), output_file);
             fprintf(output_file, "out\n");
@@ -140,10 +185,12 @@ int PutOperator(Node* node, FILE* output_file)
             printf("Equal\n");
             CheckSyntaxError(IS_VAR(L(node)), L(node), -1);
 
-            printf("var = <%s>\n", VAL_VAR(L(node)));
-
             int index = GetVarIndex(VAL_VAR(L(node)));
-            if (index == -1) return -1;
+            if (index == -1)
+            {
+                printf(RED "Unknown var <%s>\n" DEFAULT_COLOR, VAL_VAR(L(node)));
+                CheckSyntaxError(0, node, -1);
+            }
             printf("index = %d\n", index);
 
             ReturnIfError(PutNodeInFile(R(node), output_file));
@@ -174,16 +221,20 @@ int PutKeyword(Node* node, FILE* output_file)
             int else_label     = LabelCounter();
             int end_else_label = LabelCounter();
 
-            CheckSyntaxError(L(node) != nullptr, L(node), -1);     
+            CheckSyntaxError(L(node) != nullptr, L(node), -1);
             PutNodeInFile(L(node), output_file);                    //cond
             fprintf(output_file, "push 0\n");
             fprintf(output_file, "jne label%d\n", else_label);       //go to else branch
 
+            StartScope();
             PutNodeInFile(RL(node), output_file);                   //true branch
             fprintf(output_file, "jmp label%d\n", end_else_label);  //skip else branch
+            EndScope();
 
             fprintf(output_file, "label%d:\n", else_label);          //else branch
-            PutNodeInFile(RR(node), output_file);                   
+            StartScope();
+            PutNodeInFile(RR(node), output_file);            
+            EndScope();       
             fprintf(output_file, "label%d:\n", end_else_label);
 
             return 0;
@@ -197,6 +248,7 @@ int PutKeyword(Node* node, FILE* output_file)
 
 int PutNodeInFile(Node* node, FILE* output_file)
 {
+    DUMP_L(&VARS);
     if (node == nullptr)
         return 0;
     if (output_file == nullptr)

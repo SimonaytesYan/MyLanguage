@@ -586,8 +586,6 @@ int ListInsert(List* list, ListElem_t value, int after_which, int* index)
     new_elem->val.name = (char*)calloc(strlen(value.name) + 1, sizeof(char));
     strcpy(new_elem->val.name, value.name);
     new_elem->val.index = value.index;
-
-    printf("new_elem->val.name = %s\n", new_elem->val.name);
     
     int next       = list->data[after_which].next;
     new_elem->next = next;
