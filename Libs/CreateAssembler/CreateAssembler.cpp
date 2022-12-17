@@ -159,7 +159,6 @@ int PutOperator(Node* node, FILE* output_file)
 
 int PutKeyword(Node* node, FILE* output_file)
 {
-
     switch (VAL_KEYWORD(node))
     {
         case KEYWORD_VAR:
@@ -178,15 +177,16 @@ int PutKeyword(Node* node, FILE* output_file)
             CheckSyntaxError(L(node) != nullptr, L(node), -1);     
             PutNodeInFile(L(node), output_file);                    //cond
             fprintf(output_file, "push 0\n");
-            fprintf(output_file, "je label%d\n", else_label);       //go to else branch
+            fprintf(output_file, "jne label%d\n", else_label);       //go to else branch
 
             PutNodeInFile(RL(node), output_file);                   //true branch
             fprintf(output_file, "jmp label%d\n", end_else_label);  //skip else branch
 
-            fprintf(output_file, "label%d\n", else_label);          //else branch
+            fprintf(output_file, "label%d:\n", else_label);          //else branch
             PutNodeInFile(RR(node), output_file);                   
-            fprintf(output_file, "label%d\n", end_else_label);
+            fprintf(output_file, "label%d:\n", end_else_label);
 
+            return 0;
             break;
         }
     

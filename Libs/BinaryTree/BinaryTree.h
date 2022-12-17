@@ -207,10 +207,10 @@ static void WriteNodeAndEdge(Node* node, void* fp_void)
             fprintf(fp, "VAR | %s ", VAL_VAR(node));
             break;
         case TYPE_KEYWORD:
-            fprintf(fp, "KEYWORD | %d", VAL_KEYWORD(node));
-            if (VAL_KEYWORD(node) < KEYWORDS_NUM)
-                fprintf(fp, "<%s> " , KEYWORDS[VAL_KEYWORD(node)]);
+        {
+            fprintf(fp, "KEYWORD | %d ", VAL_KEYWORD(node));
             break;
+        }
         case TYPE_FICT:
             fprintf(fp, "FICT ");
             break;

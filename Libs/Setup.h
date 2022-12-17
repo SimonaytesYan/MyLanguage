@@ -91,8 +91,8 @@ const Operator_t STD_OPERATORS[] = {
 const int KEYWORDS_NUM = 3;
 
 const Keyword_t KEYWORDS[] = {
-                                {"var", KEYWORD_VAR},
-                                {"if", KEYWORD_IF},
+                                {"var",  KEYWORD_VAR},
+                                {"if",   KEYWORD_IF},
                                 {"then", KEYWORD_THEN},
                              };
 

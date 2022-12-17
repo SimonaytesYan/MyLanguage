@@ -9,7 +9,7 @@ static Node* last_comand = 0;
 //----------------------------
 //Grammar   ::= Scope
 //Scope     ::= CreateVar* {If | Equal | {PlusMinus ';'}}+
-//If        ::= {"if" PlusMinus "then"} Scope
+//If        ::= {"if" PlusMinus "then"} PlusMinus
 //CreateVar ::= "var" V ';'
 //Equal     ::= V '=' PlusMinus ';'
 //PlusMinus ::= MulDiv{['+','-']MulDiv}*
@@ -115,14 +115,18 @@ static Node* GetScope(Node** ip)
 
     while (true)
     {
-        new_node = GetEqual(ip);
+        new_node = GetIf(ip);
         if (new_node == nullptr)
         {
-            new_node = GetPlusMinus(ip);
+            new_node = GetEqual(ip);
             if (new_node == nullptr)
-                break;
-            CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ';', *ip, nullptr);
-            (*ip)++;
+            {
+                new_node = GetPlusMinus(ip);
+                if (new_node == nullptr)
+                    break;
+                CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ';', *ip, nullptr);
+                (*ip)++;
+            }
         }
         
         R(val) = new_node;
@@ -149,14 +153,22 @@ static Node* GetIf(Node** ip)
     Node* new_node = nullptr;
     if (IS_KEYWORD(*ip) && VAL_KEYWORD(*ip) == KEYWORD_IF)
     {
-        L(new_node) = GetPlusMinus(ip);
+        new_node    = NodeCtorKeyword(KEYWORD_IF); 
+        (*ip)++;
+        L(new_node) = GetPlusMinus(ip);     //!condition
         CheckSyntaxError(IS_KEYWORD(*ip) && (VAL_KEYWORD(*ip) == KEYWORD_THEN), *ip, nullptr);
+        (*ip)++;
 
+        R(new_node)  = NodeCtorFict();
+        RL(new_node) = GetPlusMinus(ip);        //!true branch
+        CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ';', *ip, nullptr);
+        (*ip)++;
     }
     
     #ifdef DEBUG
         printf("(end if)\n");
     #endif    
+    return new_node;
 }
 
 static Node* GetCreateVar(Node** ip)
