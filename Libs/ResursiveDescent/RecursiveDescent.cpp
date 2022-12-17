@@ -135,7 +135,7 @@ static Node* GetScope(Node** ip)
     #ifdef DEBUG
         printf("(end scope)\n");
     #endif
-    return new_node;
+    return val;
 }
 
 static Node* GetIf(Node** ip)
