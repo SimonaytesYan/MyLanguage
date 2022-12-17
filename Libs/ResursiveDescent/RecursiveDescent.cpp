@@ -14,7 +14,7 @@ static Node* last_comand = 0;
 //Equal     ::= V '=' PlusMinus ';'
 //PlusMinus ::= MulDiv{['+','-']MulDiv}*
 //MulDiv    ::= InOut{['*','/']Out}*
-//InOut     ::= "out" PlusMinus ';' | "in" V ';' | Pow
+//InOut     ::= "out" PlusMinus | "in" V | Pow
 //Pow       ::= Brackets {"^" Pow}*
 //Brackets  ::= '('PlusMinus')' | Var | Num
 //Var       ::= ['a'-'z','0'-'9','_']
@@ -79,7 +79,6 @@ Node* GetNodeFromComands(Node* program)
     #ifdef DEBUG
         printf("(Grammar)\n");
     #endif
-    printf("&program = %p\n", &program);
 
     return GetScope(&program);
 }
@@ -199,11 +198,8 @@ static Node* GetEqual(Node** ip)
         printf("(Equal)\n");
     #endif
 
-    printf("ip = %p\n", ip);
-    printf("*ip = %p\n", *ip);
-    if (ip == nullptr) return nullptr;
-    if (*ip >= last_comand) return nullptr;
-    if (*ip == nullptr) return nullptr;
+    if (ip == nullptr || *ip >= last_comand || *ip == nullptr) 
+        return nullptr;
 
     Node* var = GetVar(ip);
     if (var == nullptr) return nullptr;
@@ -268,13 +264,9 @@ static Node* GetMulDiv(Node** s)
     #endif
 
     Node* val = GetInOut(s);
-    if (val == nullptr) return nullptr;
+    if (val == nullptr) 
+        return nullptr;
 
-    #ifdef DEBUG
-        printf("(MulDiv)TYPE(*s) = %d\n", TYPE(*s));
-        if (TYPE(*s) == TYPE_OP)
-            printf("(MulDiv)OP(*s) = %d\n", VAL_OP(*s));
-    #endif
     while (IS_MUL(*s) || IS_DIV(*s))
     {
         Node* op = CpyNode(*s);
@@ -299,6 +291,7 @@ static Node* GetInOut(Node** ip)
 {
     if (ip == nullptr || *ip >= last_comand || *ip == nullptr)
         return nullptr;
+
     #ifdef DEBUG
         printf("(Out)\n" "[%d][%d]\n", (*ip)->val.number_cmd_line_in_text,
                                          (*ip)->val.number_cmd_in_text);
@@ -310,8 +303,6 @@ static Node* GetInOut(Node** ip)
         new_node = CpyNode(*ip);
         (*ip)++;
         R(new_node) = GetPlusMinus(ip);
-        CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ';', *ip, nullptr);
-        (*ip)++;
         return new_node;
     }
     else if (IS_OP(*ip) && VAL_OP(*ip) == OP_IN)
@@ -320,8 +311,6 @@ static Node* GetInOut(Node** ip)
         (*ip)++;
         CheckSyntaxError(IS_VAR(*ip), *ip, nullptr);
         R(new_node) = GetVar(ip);
-        CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ';', *ip, nullptr);
-        (*ip)++;
         return new_node;
     }
     

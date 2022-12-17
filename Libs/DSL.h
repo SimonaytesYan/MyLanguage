@@ -3,16 +3,18 @@
 
 const double PRECISION = 1e-6;
 
-#define CheckSyntaxError(cond, node, return_code)                                                                    \
+#define CheckSyntaxError(cond, node, return_code)                                                       \
     if (!(cond))                                                                                        \
     {                                                                                                   \
-        LogPrintf("Syntax error in line %ld symbol %ld: %s\n",                                          \
+        LogPrintf("(%d)Syntax error in line %ld symbol %ld: %s\n",                                      \
+                                        __LINE__ ,                                                      \
                                         (node)->val.number_cmd_line_in_text,                            \
                                         (node)->val.number_cmd_in_text, #cond);                         \
-        fprintf(stderr, "Syntax error in line %ld symbol %ld: %s\n",                                    \
+        fprintf(stderr, "(%d)Syntax error in line %ld symbol %ld: %s\n",                                \
+                                              __LINE__ ,                                                \
                                               (node)->val.number_cmd_line_in_text,                      \
                                               (node)->val.number_cmd_in_text, #cond);                   \
-        return return_code;                                                                                 \
+        return return_code;                                                                             \
     }
 
 #define ReturnAndTex                            \
