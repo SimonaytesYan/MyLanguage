@@ -8,16 +8,18 @@ static Node* last_comand = 0;
 
 //----------------------------
 //Grammar   ::= Scope
-//Scope     ::= "begin" CreateVar* {If | Equal | {PlusMinus ';'}}+ "end"
-//If        ::= {"if" PlusMinus "then"} Scope {"else" Scope}?
-//CreateVar ::= "var" V ';'
-//Equal     ::= V '=' PlusMinus ';'
+//Scope     ::= "begin" CreateVar* {While | If | Equal | {Logical ';'}}+ "end"
+//While     ::= "while" Logical "do" Scope
+//If        ::= {"if" Logical "then"} Scope {"else" Scope}?
+//CreateVar ::= "var" Var ';'
+//Equal     ::= Var '=' Logical ';'
+//Logical   ::= PlusMinus {Logical_operator PlusMinus}?
 //PlusMinus ::= MulDiv{['+','-']MulDiv}*
 //MulDiv    ::= InOut{['*','/']Out}*
-//InOut     ::= "out" PlusMinus | "in" V | Pow
+//InOut     ::= "out" Logical | "in" Var | Pow
 //Pow       ::= Brackets {"^" Pow}*
-//Brackets  ::= '('PlusMinus')' | Var | Num
-//Var       ::= ['a'-'z','0'-'9','_']
+//Brackets  ::= '('Logical')' | Var | Num
+//Var       ::= ['a'-'z','0'-'9','_']+
 //Number    ::= ['0'-'9']+
 //----------------------------
 
@@ -34,11 +36,15 @@ Node* CreateNodeWithChild_Op(Node* left_node, Node* right_node, OPER_TYPES op);
 
 static Node* GetScope(Node** ip);
 
+static Node* GetWhile(Node** ip);
+
 static Node* GetIf(Node** ip);
 
 static Node* GetCreateVar(Node** ip);
 
 static Node* GetEqual(Node** ip);
+
+static Node* GetLogical(Node** ip);
 
 static Node* GetPlusMinus(Node** s);
 
@@ -122,25 +128,21 @@ static Node* GetScope(Node** ip)
 
     while (true)
     {
-        if(TYPE(*ip) == TYPE_KEYWORD && VAL_KEYWORD(*ip) == KEYWORD_END)
-        {
-            (*ip)++;
-            #ifdef DEBUG
-                printf("(end scope)\n");
-            #endif
-            return val;
-        }
-        new_node = GetIf(ip);
+        new_node = GetWhile(ip);
         if (new_node == nullptr)
         {
-            new_node = GetEqual(ip);
+            new_node = GetIf(ip);
             if (new_node == nullptr)
             {
-                new_node = GetPlusMinus(ip);
+                new_node = GetEqual(ip);
                 if (new_node == nullptr)
-                    break;
-                CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ';', *ip, nullptr);
-                (*ip)++;
+                {
+                    new_node = GetLogical(ip);
+                    if (new_node == nullptr)
+                        break;
+                    CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ';', *ip, nullptr);
+                    (*ip)++;
+                }
             }
         }
         
@@ -149,6 +151,15 @@ static Node* GetScope(Node** ip)
         L(new_node) = val;
         R(new_node) = nullptr;
         val = new_node;
+        
+        if(TYPE(*ip) == TYPE_KEYWORD && VAL_KEYWORD(*ip) == KEYWORD_END)
+        {
+            (*ip)++;
+            #ifdef DEBUG
+                printf("(end scope)\n");
+            #endif
+            return val;
+        }
     }
     
     #ifdef DEBUG
@@ -156,6 +167,29 @@ static Node* GetScope(Node** ip)
     #endif
 
     return val;
+}
+
+static Node* GetWhile(Node** ip)
+{
+    #ifdef DEBUG
+        printf("(While)\n");
+    #endif
+
+    Node* val = nullptr;
+    if (IS_KEYWORD(*ip) && VAL_KEYWORD(*ip) == KEYWORD_WHILE)
+    {
+        val = NodeCtorKeyword(KEYWORD_WHILE);
+        (*ip)++;
+        L(val) = GetLogical(ip);
+        CheckSyntaxError(IS_KEYWORD(*ip) && VAL_KEYWORD(*ip) == KEYWORD_DO, *ip, nullptr);
+        (*ip)++;
+        R(val) = GetScope(ip);
+    }
+
+    return val;
+    #ifdef DEBUG
+        printf("(end while)\n");
+    #endif
 }
 
 static Node* GetIf(Node** ip)
@@ -171,7 +205,7 @@ static Node* GetIf(Node** ip)
     {
         val    = NodeCtorKeyword(KEYWORD_IF); 
         (*ip)++;
-        L(val) = GetPlusMinus(ip);     //!condition
+        L(val) = GetLogical(ip);     //!condition
         CheckSyntaxError(IS_KEYWORD(*ip) && (VAL_KEYWORD(*ip) == KEYWORD_THEN), *ip, nullptr);
         (*ip)++;
 
@@ -212,12 +246,6 @@ static Node* GetCreateVar(Node** ip)
                 (*ip)++;
                 break;
             }
-
-            case UNDEF_KEYWORD_TYPE:
-                return nullptr;
-            
-            default:
-                break;
         }
     }
 
@@ -241,7 +269,7 @@ static Node* GetEqual(Node** ip)
     Node* new_node = CpyNode(*ip);
     L(new_node) = var;
     (*ip)++;
-    R(new_node) = GetPlusMinus(ip);
+    R(new_node) = GetLogical(ip);
     CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ';', *ip, nullptr);
     (*ip)++;
 
@@ -253,6 +281,34 @@ static Node* GetEqual(Node** ip)
     #endif
 
     return new_node;    
+}
+
+static Node* GetLogical(Node** ip)
+{
+    #ifdef DEBUG
+        printf("(Logical)\n");
+    #endif
+
+    if (ip == nullptr || *ip >= last_comand || *ip == nullptr) 
+        return nullptr;
+
+    Node* val = nullptr;
+
+    val = GetPlusMinus(ip);
+    if (val == nullptr) return nullptr;
+
+    if (*ip < last_comand && IS_LOGICAL_OP(*ip))
+    {
+        Node* new_node = NodeCtorOp(VAL_OP(*ip));
+        L(new_node) = val;
+        (*ip)++;
+        R(new_node) = GetPlusMinus(ip);
+        if (R(new_node) == nullptr)
+            return nullptr;
+        return new_node;
+    }
+
+    return val;
 }
 
 static Node* GetPlusMinus(Node** s)
@@ -334,7 +390,7 @@ static Node* GetInOut(Node** ip)
     {
         new_node = CpyNode(*ip);
         (*ip)++;
-        R(new_node) = GetPlusMinus(ip);
+        R(new_node) = GetLogical(ip);
         return new_node;
     }
     else if (IS_OP(*ip) && VAL_OP(*ip) == OP_IN)
@@ -392,7 +448,7 @@ static Node* GetBrackets(Node** s)
     if (IS_SYMB(*s) && VAL_SYMB(*s) == '(')
     {
         (*s)++;
-        val = GetPlusMinus(s);
+        val = GetLogical(s);
         if (val == nullptr) return nullptr;
 
         CheckSyntaxError(IS_SYMB(*s) && VAL_SYMB(*s) == ')', *s, nullptr);

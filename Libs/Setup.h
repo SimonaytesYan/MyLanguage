@@ -25,6 +25,8 @@ enum KEYWORD_TYPES
     KEYWORD_ELSE       = 4,
     KEYWORD_BEGIN      = 5,
     KEYWORD_END        = 6,
+    KEYWORD_WHILE      = 7,
+    KEYWORD_DO         = 8,
 };
 
 enum OPER_TYPES
@@ -37,15 +39,15 @@ enum OPER_TYPES
     OP_POW          = 5,
     OP_IN           = 6,
     OP_OUT          = 7,
-//    OP_IS_EQ        = 8,
-//    OP_IS_B         = 9,
-//    OP_IS_S         = 10,
-//    OP_IS_BE        = 11,
-//    OP_IS_SE        = 12,
-//    OP_IS_NE        = 13,
+    OP_IS_EQ        = 8,
+    OP_IS_B         = 9,
+    OP_IS_S         = 10,
+    OP_IS_BE        = 11,
+    OP_IS_SE        = 12,
+    OP_IS_NE        = 13,
 //    OP_NOT          = 14,
-//    OP_AND          = 15,
-//    OP_OR           = 16,
+    OP_AND          = 15,
+    OP_OR           = 16,
     OP_EQ           = 17,
 };
 
@@ -78,20 +80,28 @@ struct Keyword_t
 
 const int MAX_VAR_SIZE      = 20;
 
-const int STD_OPERATORS_NUM = 8;
+const int STD_OPERATORS_NUM = 16;
 
 const Operator_t STD_OPERATORS[] = {
-                                    {"+", OP_PLUS},
-                                    {"-", OP_SUB},
-                                    {"*", OP_MUL},
-                                    {"/", OP_DIV},
-                                    {"^", OP_POW},
-                                    {"in", OP_IN},
-                                    {"out", OP_OUT},
-                                    {"=", OP_EQ}
+                                    {"+",   OP_PLUS },
+                                    {"-",   OP_SUB  },
+                                    {"*",   OP_MUL  },
+                                    {"/",   OP_DIV  },
+                                    {"^",   OP_POW  },
+                                    {"in",  OP_IN   },
+                                    {"out", OP_OUT  },
+                                    {"=",   OP_EQ   },
+                                    {"==",  OP_IS_EQ},
+                                    {">",   OP_IS_B },
+                                    {"<",   OP_IS_S },
+                                    {">=",  OP_IS_BE},
+                                    {"<=",  OP_IS_SE},
+                                    {"!=",  OP_IS_NE},
+                                    {"and", OP_AND  },
+                                    {"or",  OP_OR   },
                                    };
 
-const int KEYWORDS_NUM = 6;
+const int KEYWORDS_NUM = 8;
 
 const Keyword_t KEYWORDS[] = {
                                 {"var",   KEYWORD_VAR},
@@ -100,6 +110,8 @@ const Keyword_t KEYWORDS[] = {
                                 {"else",  KEYWORD_ELSE},
                                 {"begin", KEYWORD_BEGIN},
                                 {"end",   KEYWORD_END},
+                                {"while", KEYWORD_WHILE},
+                                {"do",    KEYWORD_DO},
                              };
 
 void PrintElemInLog(Node_t elem);

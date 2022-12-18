@@ -141,7 +141,7 @@ int PutVar(Node* node, FILE* output_file)
 int PutOperator(Node* node, FILE* output_file)
 {
     printf("start operator\n");
-    if (IS_PLUS(node) || IS_SUB(node) || IS_DIV(node) || IS_MUL(node))
+    if (IS_OP(node) && VAL_OP(node) != OP_OUT && VAL_OP(node) != OP_EQ && VAL_OP(node) != OP_IN)
     {
         PutNodeInFile(L(node), output_file);
         PutNodeInFile(R(node), output_file);
@@ -159,7 +159,31 @@ int PutOperator(Node* node, FILE* output_file)
             fprintf(output_file, "mul\n");
             break;
         case OP_DIV:
-            fprintf(output_file, "sub\n");
+            fprintf(output_file, "div\n");
+            break;
+        case OP_AND:
+            fprintf(output_file, "and\n");
+            break;
+        case OP_OR:
+            fprintf(output_file, "and\n");
+            break;
+        case OP_IS_B:
+            fprintf(output_file, "is_b\n");
+            break;
+        case OP_IS_BE:
+            fprintf(output_file, "is_be\n");
+            break;
+        case OP_IS_EQ:
+            fprintf(output_file, "is_eq\n");
+            break;
+        case OP_IS_NE:
+            fprintf(output_file, "is_ne\n");
+            break;
+        case OP_IS_S:
+            fprintf(output_file, "is_s\n");
+            break;
+        case OP_IS_SE:
+            fprintf(output_file, "is_se\n");
             break;
         case OP_OUT:
         {
@@ -197,9 +221,7 @@ int PutOperator(Node* node, FILE* output_file)
             fprintf(output_file, "pop [%d]\n", index);
             break;
         }
-        
-        default:
-            break;
+
     }
     return 0;
 }
@@ -214,7 +236,6 @@ int PutKeyword(Node* node, FILE* output_file)
             printf("add var <%s>\n", VAL_VAR(L(node)));
             ReturnIfError(AddVar(VAL_VAR(L(node))));
             return 0;
-            break;
         }
         case KEYWORD_IF:
         {
@@ -224,26 +245,47 @@ int PutKeyword(Node* node, FILE* output_file)
             CheckSyntaxError(L(node) != nullptr, L(node), -1);
             PutNodeInFile(L(node), output_file);                    //cond
             fprintf(output_file, "push 0\n");
-            fprintf(output_file, "jne label%d\n", else_label);       //go to else branch
+            fprintf(output_file, "jne label%d\n", else_label);      //go to else branch
 
             StartScope();
             PutNodeInFile(RL(node), output_file);                   //true branch
             fprintf(output_file, "jmp label%d\n", end_else_label);  //skip else branch
             EndScope();
 
-            fprintf(output_file, "label%d:\n", else_label);          //else branch
+            fprintf(output_file, "label%d:\n", else_label);         //else branch
             StartScope();
             PutNodeInFile(RR(node), output_file);            
             EndScope();       
             fprintf(output_file, "label%d:\n", end_else_label);
 
             return 0;
-            break;
+        }
+
+        case KEYWORD_WHILE:
+        {
+            CheckSyntaxError(L(node) != nullptr, L(node), -1);
+
+            int start_loop_label = LabelCounter();
+            int end_loop_label   = LabelCounter();
+            
+            fprintf(output_file, "label%d:\n", start_loop_label);
+            PutNodeInFile(L(node), output_file);                        //cond
+            fprintf(output_file, "push 0\n");
+            fprintf(output_file, "jne label%d\n", end_loop_label);      //end loop
+
+            StartScope();                                               //loop body
+            PutNodeInFile(R(node), output_file);                    
+            EndScope();
+            fprintf(output_file, "jmp label%d\n", start_loop_label);   //end loop
+            
+            fprintf(output_file, "label%d:\n", end_loop_label);
+            return 0;
         }
     
         default:
             break;
     }
+    return 0;
 }
 
 int PutNodeInFile(Node* node, FILE* output_file)

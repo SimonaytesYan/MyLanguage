@@ -515,9 +515,10 @@ int ListRemove(List* list, int index)
     list->data[next_ind].prev = prev_ind;
     list->data[prev_ind].next = next_ind;
 
-    list->data[index].val  = ELEM_POISON;
-    list->data[index].prev = list->free;
-    list->data[index].next = -1;
+    free(list->data[index].val.name);
+    list->data[index].val      = ELEM_POISON;
+    list->data[index].prev     = list->free;
+    list->data[index].next     = -1;
 
     list->free = index;
  

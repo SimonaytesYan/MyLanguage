@@ -135,6 +135,10 @@ const double PRECISION = 1e-6;
 
 #define IS_KEYWORD(node) (TYPE(node) == TYPE_KEYWORD)
 
+#define IS_LOGICAL_OP(node) (IS_OP(node) && (VAL_OP(node) == OP_AND   || VAL_OP(node) == OP_IS_B  ||\
+                                       VAL_OP(node) == OP_IS_BE || VAL_OP(node) == OP_IS_EQ       ||\
+                                       VAL_OP(node) == OP_IS_NE || VAL_OP(node) == OP_IS_S        ||\
+                                       VAL_OP(node) == OP_IS_SE || VAL_OP(node) == OP_OR))
 
 #define VAL_N(node) (node)->val.val.dbl
 
