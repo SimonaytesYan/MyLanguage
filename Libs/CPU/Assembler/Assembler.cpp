@@ -192,7 +192,7 @@ int PutArgsAndCmdInArray(const char* args, int* comands, int* comand_index, int 
 
 int FindLabel(Label* labels, char* name, int* index)
 {
-    for(int i = 0; i < MAX_LABELS; i++)
+    for(size_t i = 0; i < MAX_LABELS; i++)
     {
         if (stricmp(name, labels[i].name) == 0)
         {

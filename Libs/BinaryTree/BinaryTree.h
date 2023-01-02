@@ -211,6 +211,21 @@ static void WriteNodeAndEdge(Node* node, void* fp_void)
             fprintf(fp, "KEYWORD | %d ", VAL_KEYWORD(node));
             break;
         }
+        case TYPE_FUNCTION:
+        {
+            fprintf(fp, "FUNCTION | [%s] ", node->val.val.function);
+            break;
+        }
+        case TYPE_CALL:
+        {
+            fprintf(fp, "CALL | [%s] ", node->val.val.function);
+            break;
+        }
+        case TYPE_RETURN:
+        {
+            fprintf(fp, "RETURN");
+            break;
+        }
         case TYPE_FICT:
             fprintf(fp, "FICT ");
             break;
@@ -373,6 +388,48 @@ static Node* NodeCtorFict()
 
     Node_t node_val = {};
     node_val.type   = TYPE_FICT;
+
+    NodeCtor(new_node, node_val);
+
+    return new_node;
+}
+
+static Node* NodeCtorReturn()
+{
+    Node* new_node = (Node*)calloc(1, sizeof(Node));
+
+    Node_t node_val  = {};
+    node_val.type    = TYPE_RETURN;
+
+    NodeCtor(new_node, node_val);
+
+    return new_node;
+}
+
+static Node* NodeCtorCall(const char* val)
+{
+    Node* new_node = (Node*)calloc(1, sizeof(Node));
+
+    Node_t node_val  = {};
+    node_val.type    = TYPE_CALL;
+    
+    node_val.val.function = (char*)calloc(strlen(val) + 1, 1);
+    strcpy(node_val.val.var, val);
+
+    NodeCtor(new_node, node_val);
+
+    return new_node;
+}
+
+static Node* NodeCtorFunction(const char* val)
+{
+    Node* new_node = (Node*)calloc(1, sizeof(Node));
+
+    Node_t node_val  = {};
+    node_val.type    = TYPE_FUNCTION;
+
+    node_val.val.function = (char*)calloc(strlen(val) + 1, 1);
+    strcpy(node_val.val.var, val);
 
     NodeCtor(new_node, node_val);
 

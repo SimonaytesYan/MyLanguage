@@ -7,34 +7,36 @@ static Node* last_comand = 0;
 #define DEBUG
 
 //----------------------------
-//Grammar   ::= Scope
-//Scope     ::= "begin" CreateVar* {While | If | Equal | {Logical ';'}}+ "end"
+//Grammar   ::= CreateVar* Function* Scope
+//Scope     ::= "begin" CreateVar* { Return | While | If | Equal | {Logical ';'}}+ "end"
+//Return    ::= "return" logical ';'
+//Function  ::= "function" Var '(' Var?{',' Var}* ')' Scope
 //While     ::= "while" Logical "do" Scope
 //If        ::= {"if" Logical "then"} Scope {"else" Scope}?
 //CreateVar ::= "var" Var ';'
 //Equal     ::= Var '=' Logical ';'
 //Logical   ::= PlusMinus {Logical_operator PlusMinus}?
 //PlusMinus ::= MulDiv{['+','-']MulDiv}*
-//MulDiv    ::= InOut{['*','/']Out}*
-//InOut     ::= "out" Logical | "in" Var | Pow
+//MulDiv    ::= InOutCall{['*','/']InOutCall}*
+//InOutCall ::= "out" Logical | "in" Var | Call | Pow
+//Call      ::= "call" Var '(' Logical?{',' Logical}* ')'
 //Pow       ::= Brackets {"^" Pow}*
 //Brackets  ::= '('Logical')' | Var | Num
 //Var       ::= ['a'-'z','0'-'9','_']+
 //Number    ::= ['0'-'9']+
 //----------------------------
 
-//----------------------------
-//+: x^2; x^x^x; y+sin(x^2); 14+99; 5*x; x; 2 + x*(3 + 4542/2) - y; sin(sin(x)); y + sin(a * cos(log(1))) 
-//-: -5; +7; -19*7; x + u15; 17l; x + y - ; kl; A
-//----------------------------
-
 #define IterIp(ip, return_val)                                  \
         (*ip)++;                                                \
         if ((*ip) >= last_comand) return return_val;            \
 
-Node* CreateNodeWithChild_Op(Node* left_node, Node* right_node, OPER_TYPES op);
-
 static Node* GetScope(Node** ip);
+
+static Node* GetFunction(Node** ip);
+
+static Node* GetCall(Node** ip);
+
+static Node* GetReturn(Node** ip);
 
 static Node* GetWhile(Node** ip);
 
@@ -50,7 +52,7 @@ static Node* GetPlusMinus(Node** s);
 
 static Node* GetMulDiv(Node** s);
 
-static Node* GetInOut(Node** s);
+static Node* GetInOutCall(Node** s);
 
 static Node* GetPow(Node** s);
 
@@ -90,7 +92,171 @@ Node* GetNodeFromComands(Node* program)
         printf("(Grammar)\n");
     #endif
 
-    return GetScope(&program);
+    Node* new_node   = nullptr;
+    Node* val        = NodeCtorFict();
+    Node* start_node = val;
+
+    L(val)= NodeCtorFict();
+    val = L(val);
+
+    while((new_node = GetCreateVar(&program)) != nullptr)         //!Get vars
+    {
+        R(val)  = NodeCtorFict();
+        RL(val) = new_node;
+        val = R(val);
+    }
+    val = start_node;
+
+    while ((new_node = GetFunction(&program)) != nullptr)   //!Get functions
+    {
+        R(val)  = NodeCtorFict();
+        RL(val) = new_node;
+        val = R(val);
+    }
+
+    R(val) = GetScope(&program);                            //!Get main program
+
+    #ifdef DEBUG
+        printf("(End Grammar)\n");
+    #endif
+    return start_node;
+}
+
+static Node* GetReturn(Node** ip)
+{
+    if (ip == nullptr || *ip == nullptr || *ip >= last_comand)
+        return nullptr;
+    #ifdef DEBUG
+        printf("(Return)\n");
+    #endif
+
+    Node* val = nullptr;
+
+    if (IS_KEYWORD(*ip) && VAL_KEYWORD(*ip) == KEYWORD_RETURN)
+    {
+        val = NodeCtorReturn();
+        (*ip)++;
+        R(val) = GetLogical(ip);
+        CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ';', *ip, nullptr);
+        (*ip)++;
+    }
+
+    #ifdef DEBUG
+        printf("(end return)\n");
+    #endif
+
+    return val;
+}
+
+static Node* GetCall(Node** ip)
+{
+    if (ip == nullptr || *ip == nullptr || *ip >= last_comand)
+        return nullptr;
+    #ifdef DEBUG
+        printf("(Call)\n");
+    #endif
+
+    Node* val = nullptr;
+
+    if (IS_KEYWORD(*ip) && VAL_KEYWORD(*ip) == KEYWORD_CALL)
+    {
+        (*ip)++;
+        CheckSyntaxError(IS_VAR(*ip), *ip, nullptr);                        
+        val = NodeCtorCall(VAL_VAR(*ip));                                           //!Get funciton name
+        val->val.number_cmd_in_text      = (*ip)->val.number_cmd_in_text;
+        val->val.number_cmd_line_in_text = (*ip)->val.number_cmd_line_in_text;
+        (*ip)++;
+        CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == '(', *ip, nullptr);
+        (*ip)++;
+
+        Node* old_val = val;
+        R(val) = NodeCtorFict();
+        val = R(val);
+
+        Node* new_node = nullptr;                                                   //!Get args
+        bool more_arg = false;
+        while ((new_node = GetLogical(ip)) != nullptr)
+        {
+            R(val)  = NodeCtorFict();
+            RL(val) = new_node;
+            val = R(val);
+            if (TYPE(*ip) == TYPE_SYMB && VAL_SYMB(*ip) == ',')
+            {
+                more_arg = true;
+                (*ip)++;
+                continue;
+            }
+            more_arg = false;
+            break;
+        }
+        CheckSyntaxError(!more_arg || new_node != nullptr, *ip, nullptr);        
+        
+        CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ')', *ip, nullptr);
+        (*ip)++;
+        val = old_val;
+    }
+
+    #ifdef DEBUG
+        printf("(end call)\n");
+    #endif
+
+    return val;
+}
+
+static Node* GetFunction(Node** ip)
+{
+    if (ip == nullptr || *ip == nullptr || *ip >= last_comand)
+        return nullptr;
+    #ifdef DEBUG
+        printf("(Function)\n");
+    #endif
+
+    Node* val = nullptr;
+    if(IS_KEYWORD(*ip) && VAL_KEYWORD(*ip) == KEYWORD_FUNCTION)
+    {
+        (*ip)++;
+        CheckSyntaxError(TYPE(*ip) == TYPE_VAR, *ip, nullptr);
+
+        val = NodeCtorFunction(VAL_VAR(*ip));
+        val->val.number_cmd_in_text      = (*ip)->val.number_cmd_in_text;
+        val->val.number_cmd_line_in_text = (*ip)->val.number_cmd_line_in_text;
+        (*ip)++;
+        CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == '(', *ip, nullptr);
+        (*ip)++;
+
+        Node* old_val = val;
+        L(val)  = NodeCtorFict();
+        val = L(val);
+
+        Node* new_node = nullptr;
+        bool more_arg = false;
+        while ((new_node = GetVar(ip)))
+        {
+            L(val)  = NodeCtorFict();
+            LR(val) = new_node;
+            val = L(val);
+            if (TYPE(*ip) == TYPE_SYMB && VAL_SYMB(*ip) == ',')
+            {
+                more_arg = true;
+                (*ip)++;
+                continue;
+            }
+            more_arg = false;
+            break;
+        }
+        
+        CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ')', *ip, nullptr);
+        (*ip)++;
+
+        val = old_val;
+        R(val) = GetScope(ip);
+    }
+
+    #ifdef DEBUG
+        printf("(End function)\n");
+    #endif
+
+    return val;
 }
 
 static Node* GetScope(Node** ip)
@@ -128,20 +294,26 @@ static Node* GetScope(Node** ip)
 
     while (true)
     {
-        new_node = GetWhile(ip);
+        if (IS_KEYWORD(*ip) && VAL_KEYWORD(*ip) == KEYWORD_END)
+            break;
+        new_node = GetReturn(ip);
         if (new_node == nullptr)
         {
-            new_node = GetIf(ip);
+            new_node = GetWhile(ip);
             if (new_node == nullptr)
             {
-                new_node = GetEqual(ip);
+                new_node = GetIf(ip);
                 if (new_node == nullptr)
                 {
-                    new_node = GetLogical(ip);
+                    new_node = GetEqual(ip);
                     if (new_node == nullptr)
-                        break;
-                    CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ';', *ip, nullptr);
-                    (*ip)++;
+                    {
+                        new_node = GetLogical(ip);
+                        if (new_node == nullptr)
+                            break;
+                        CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ';', *ip, nullptr);
+                        (*ip)++;
+                    }
                 }
             }
         }
@@ -241,13 +413,18 @@ static Node* GetCreateVar(Node** ip)
             case KEYWORD_VAR:
             {
                 (*ip)++;
-                new_node = GetVar(ip);
+                new_node    = NodeCtorKeyword(KEYWORD_VAR);
+                R(new_node) = GetVar(ip);
                 CheckSyntaxError((IS_SYMB(*ip) && VAL_SYMB(*ip) == ';'), *ip, nullptr);
                 (*ip)++;
                 break;
             }
         }
     }
+    
+    #ifdef DEBUG
+        printf("(end create var)\n");
+    #endif
 
     return new_node;
 }
@@ -304,10 +481,23 @@ static Node* GetLogical(Node** ip)
         (*ip)++;
         R(new_node) = GetPlusMinus(ip);
         if (R(new_node) == nullptr)
+        {
+            #ifdef DEBUG
+                printf("(end logical)\n");
+            #endif
             return nullptr;
+        }
+            
+        #ifdef DEBUG
+            printf("(end logical)\n");
+        #endif
         return new_node;
     }
 
+    
+    #ifdef DEBUG
+        printf("(end logical)\n");
+    #endif
     return val;
 }
 
@@ -351,7 +541,7 @@ static Node* GetMulDiv(Node** s)
                                           (*s)->val.number_cmd_in_text);
     #endif
 
-    Node* val = GetInOut(s);
+    Node* val = GetInOutCall(s);
     if (val == nullptr) 
         return nullptr;
 
@@ -360,7 +550,7 @@ static Node* GetMulDiv(Node** s)
         Node* op = CpyNode(*s);
         (*s)++;
 
-        Node* right_node = GetInOut(s);
+        Node* right_node = GetInOutCall(s);
         if (right_node == nullptr) return nullptr;
         
         op->left  = val;
@@ -375,13 +565,13 @@ static Node* GetMulDiv(Node** s)
     return val;
 }
 
-static Node* GetInOut(Node** ip)
+static Node* GetInOutCall(Node** ip)
 {
     if (ip == nullptr || *ip >= last_comand || *ip == nullptr)
         return nullptr;
 
     #ifdef DEBUG
-        printf("(Out)\n" "[%d][%d]\n", (*ip)->val.number_cmd_line_in_text,
+        printf("(InAndOut)\n" "[%d][%d]\n", (*ip)->val.number_cmd_line_in_text,
                                          (*ip)->val.number_cmd_in_text);
     #endif
 
@@ -391,6 +581,10 @@ static Node* GetInOut(Node** ip)
         new_node = CpyNode(*ip);
         (*ip)++;
         R(new_node) = GetLogical(ip);
+
+        #ifdef DEBUG
+            printf("(end InAndOut)\n");
+        #endif
         return new_node;
     }
     else if (IS_OP(*ip) && VAL_OP(*ip) == OP_IN)
@@ -399,11 +593,26 @@ static Node* GetInOut(Node** ip)
         (*ip)++;
         CheckSyntaxError(IS_VAR(*ip), *ip, nullptr);
         R(new_node) = GetVar(ip);
+
+        #ifdef DEBUG
+            printf("(end InAndOut)\n");
+        #endif
+        return new_node;
+    }
+    else if (IS_KEYWORD(*ip) && VAL_KEYWORD(*ip) == KEYWORD_CALL)
+    {
+        new_node = GetCall(ip);
+        #ifdef DEBUG
+            printf("(end InAndOut)\n");
+        #endif
         return new_node;
     }
     
     printf("There isnt in and out\n");
     new_node = GetPow(ip);
+    #ifdef DEBUG
+        printf("(end InAndOut)\n");
+    #endif
     return new_node;
 }
 
@@ -512,14 +721,22 @@ static Node* GetNumber(Node** s)
                                           (*s)->val.number_cmd_in_text);
     #endif
 
-    Node* new_node = CpyNode(*s);
-    (*s)++;
+    if (IS_NUM(*s))
+    {
+        Node* new_node = CpyNode(*s);
+        (*s)++;
+        #ifdef DEBUG
+            printf("end Number\n");
+        #endif
+        return new_node;
+    }
+    else
+    {
+        #ifdef DEBUG
+            printf("end Number\n");
+        #endif
+        return nullptr;
+    }
 
-    CheckSyntaxError(IS_NUM(new_node), new_node, nullptr);
 
-    #ifdef DEBUG
-        printf("end Number\n");
-    #endif
-
-    return new_node;
 }

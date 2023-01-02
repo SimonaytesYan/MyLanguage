@@ -14,6 +14,9 @@ enum NODE_TYPES
     TYPE_NUM        = 3,
     TYPE_SYMB       = 4,
     TYPE_KEYWORD    = 5,
+    TYPE_FUNCTION   = 8,
+    TYPE_RETURN     = 9,
+    TYPE_CALL       = 10,
 };
 
 enum KEYWORD_TYPES
@@ -27,6 +30,9 @@ enum KEYWORD_TYPES
     KEYWORD_END        = 6,
     KEYWORD_WHILE      = 7,
     KEYWORD_DO         = 8,
+    KEYWORD_FUNCTION   = 9,
+    KEYWORD_RETURN     = 10,
+    KEYWORD_CALL       = 11,
 };
 
 enum OPER_TYPES
@@ -60,6 +66,7 @@ struct Node_t
         int           dbl;
         OPER_TYPES    op;
         char*         var;
+        char*         function;
         KEYWORD_TYPES keyword;
     } val;
     size_t number_cmd_line_in_text = 0;
@@ -101,17 +108,20 @@ const Operator_t STD_OPERATORS[] = {
                                     {"or",  OP_OR   },
                                    };
 
-const int KEYWORDS_NUM = 8;
+const int KEYWORDS_NUM = 11;
 
 const Keyword_t KEYWORDS[] = {
-                                {"var",   KEYWORD_VAR},
-                                {"if",    KEYWORD_IF},
-                                {"then",  KEYWORD_THEN},
-                                {"else",  KEYWORD_ELSE},
-                                {"begin", KEYWORD_BEGIN},
-                                {"end",   KEYWORD_END},
-                                {"while", KEYWORD_WHILE},
-                                {"do",    KEYWORD_DO},
+                                {"var",      KEYWORD_VAR},
+                                {"if",       KEYWORD_IF},
+                                {"then",     KEYWORD_THEN},
+                                {"else",     KEYWORD_ELSE},
+                                {"begin",    KEYWORD_BEGIN},
+                                {"end",      KEYWORD_END},
+                                {"while",    KEYWORD_WHILE},
+                                {"do",       KEYWORD_DO},
+                                {"function", KEYWORD_FUNCTION},
+                                {"return",   KEYWORD_RETURN},
+                                {"call",     KEYWORD_CALL},
                              };
 
 void PrintElemInLog(Node_t elem);

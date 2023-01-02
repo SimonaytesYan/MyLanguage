@@ -16,3 +16,6 @@ Size is bigger then capacity
 Pointer to stack.data = nullptr
 Bebug info from stack damaged
 
+In int GetPopArg(int*, int*, int, CPU*) in Processor\Processor.cpp(105)
+
+Attempt to write to wrong addres in ram

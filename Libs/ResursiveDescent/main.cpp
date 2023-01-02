@@ -11,7 +11,7 @@ int main()
     FILE* fp = fopen("RecursiveDescentTests.txt", "r");
     assert(fp);
 
-    for(int i = 0; i < TESTS_NUMBER; i++)
+    for(size_t i = 0; i < TESTS_NUMBER; i++)
     {
         char buffer[100] = "";
         fscanf(fp, "%s", buffer);

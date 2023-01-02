@@ -121,7 +121,7 @@ int DrawRam(CPU* cpu)
     CHECK(cpu == nullptr, "Cpu == nullptr\n", -1);
     RGBQUAD* buf = txVideoMemory();
 
-    for(int i = 0; i < WINDOW_WIDTH; ++i)
+    for(size_t i = 0; i < WINDOW_WIDTH; ++i)
     {
         for(int j = 0; j < WINDOW_HIGHT; ++j)
         {

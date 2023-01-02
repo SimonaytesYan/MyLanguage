@@ -151,7 +151,7 @@ int ListLinerization(List* list)
     ListElem* new_data = (ListElem*)calloc(list->capacity + 1, sizeof(ListElem));
 
     int index = 0;
-    for(int i = 0; i < list->size; i++)
+    for(size_t i = 0; i < list->size; i++)
     {
         ListIterate(list, &index);
         if (index == -1)
@@ -176,7 +176,7 @@ int ListLinerization(List* list)
     {
         list->free = list->size + 1 ;
         list->data[list->size + 1].next = -1;
-        for(int i = list->size + 2; i <= list->capacity; i++)
+        for(size_t i = list->size + 2; i <= list->capacity; i++)
         {
             list->data[i - 1].prev = i;
             list->data[i].next     = -1;
@@ -273,7 +273,7 @@ void GraphicDump(List* list)
                                list->free, 
                                list->linerized);
 
-    for(int i = 0; i <= list->capacity; i++)
+    for(size_t i = 0; i <= list->capacity; i++)
     {
         if (i == 0)
             fprintf(fp, "Node%d[fillcolor = white, label = \"<i>%d \\n | <v>%d \\n | {<p> %d |<n>  %d}\"]\n", 
@@ -287,7 +287,7 @@ void GraphicDump(List* list)
     }
     
     fprintf(fp, "edge[weight = 1000, style=\"invis\"]\n");
-    for(int i = 0; i <= list->capacity; i++)
+    for(size_t i = 0; i <= list->capacity; i++)
     {
         if (i == 0)
             fprintf(fp, "info:s -> Node0:v:n\n");
@@ -299,7 +299,7 @@ void GraphicDump(List* list)
     
     fprintf(fp, "edge [color = \"blue\", style=\"solid\"]\n");
     index = 0;
-    for(int i = 0; i <= list->size; i++)
+    for(size_t i = 0; i <= list->size; i++)
     {
         int next = list->data[index].next;
 
@@ -315,7 +315,7 @@ void GraphicDump(List* list)
     if (index != -1)
     {
         fprintf(fp, "info:<f>:e -> Node%d\n", index);
-        for(int i = 0; i <= list->capacity; i++)    
+        for(size_t i = 0; i <= list->capacity; i++)    
         {
             int free_ind = list->data[index].prev;
             if (free_ind == -1)
@@ -329,7 +329,7 @@ void GraphicDump(List* list)
 
     index = 0;
     fprintf(fp, "edge [constraint=false, color = \"red\"]\n");
-    for(int i = 0; i <= list->size; i++)
+    for(size_t i = 0; i <= list->size; i++)
     {
         int prev = list->data[index].prev;
 
@@ -391,7 +391,7 @@ void DumpList(List* list, const char* function, const char* file, int line)
     if (list->data != nullptr && list->data != POISON_PTR)
     {
         LogPrintf("\tdata:");
-        for(int i = 0; i <= list->capacity; i++)
+        for(size_t i = 0; i <= list->capacity; i++)
         {
             LogPrintf("|");
             PrintStackElemInLog(list->data[i].val);
@@ -399,12 +399,12 @@ void DumpList(List* list, const char* function, const char* file, int line)
         LogPrintf("|");
 
         LogPrintf("\n\tnext:");
-        for(int i = 0; i <= list->capacity; i++)
+        for(size_t i = 0; i <= list->capacity; i++)
             LogPrintf("|%10d", list->data[i].next);    
         LogPrintf("|");
             
         LogPrintf("\n\tprev:");
-        for(int i = 0; i <= list->capacity; i++)
+        for(size_t i = 0; i <= list->capacity; i++)
             LogPrintf("|%10d", list->data[i].prev);
             
         LogPrintf("|\n");
@@ -450,7 +450,7 @@ int ListConstructor(List* list, int capacity, int line, const char* name, const 
     list->free     = -1;
     list->data     = (ListElem*)calloc(capacity + 1, sizeof(ListElem));
     if (list->data != nullptr)
-        for(int i = list->capacity; i >= 1; i--)
+        for(size_t i = list->capacity; i >= 1; i--)
         {
             list->data[i] = {ELEM_POISON, -1, list->free};
             list->free    = i;
@@ -536,7 +536,7 @@ int ResizeUp(List* list, int new_capacity)
     if (list->data == nullptr)
         return MEMORY_ALLOCATION_ERROR;
 
-    for(int i = new_capacity; i >= list->capacity + 1; i--)
+    for(size_t i = new_capacity; i >= list->capacity + 1; i--)
     {
         list->data[i] = {ELEM_POISON, -1, list->free};
         list->free = i;
@@ -584,10 +584,10 @@ int ListInsert(List* list, ListElem_t value, int after_which, int* index)
         list->linerized = false;
     
     ListElem* new_elem = &list->data[free_elem_index];
-    new_elem->val.name = (char*)calloc(strlen(value.name) + 1, sizeof(char));
+    new_elem->val.index            = value.index;
+    new_elem->val.name             = (char*)calloc(strlen(value.name) + 1, sizeof(char));
     strcpy(new_elem->val.name, value.name);
-    new_elem->val.index = value.index;
-    
+
     int next       = list->data[after_which].next;
     new_elem->next = next;
     new_elem->prev = after_which;

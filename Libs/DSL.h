@@ -9,14 +9,16 @@ const double PRECISION = 1e-6;
 #define CheckSyntaxError(cond, node, return_code)                                                       \
     if (!(cond))                                                                                        \
     {                                                                                                   \
-        LogPrintf("(%d)Syntax error in line %ld symbol %ld: %s\n",                                      \
+        LogPrintf("(%d)Syntax error in line %zu symbol %zu: %s\n",                                      \
                                         __LINE__ ,                                                      \
                                         (node)->val.number_cmd_line_in_text,                            \
-                                        (node)->val.number_cmd_in_text, #cond);                         \
-        fprintf(stderr, RED "(%d)Syntax error in line %ld symbol %ld: %s\n" DEFAULT_COLOR,              \
+                                        (node)->val.number_cmd_in_text,                                 \
+                                        #cond);                                                         \
+        fprintf(stderr, RED "(%d)Syntax error in line %zu symbol %zu: %s\n" DEFAULT_COLOR,              \
                                               __LINE__ ,                                                \
                                               (node)->val.number_cmd_line_in_text,                      \
-                                              (node)->val.number_cmd_in_text, #cond);                   \
+                                              (node)->val.number_cmd_in_text,                           \
+                                              #cond);                                                   \
         return return_code;                                                                             \
     }
 
@@ -82,6 +84,24 @@ const double PRECISION = 1e-6;
         case OP_EQ:             \
             fprintf(fp, "=");   \
             break;              \
+        case OP_IS_B:           \
+            fprintf(fp, ">");   \
+            break;              \
+        case OP_IS_BE:          \
+            fprintf(fp, ">=");  \
+            break;              \
+        case OP_IS_EQ:          \
+            fprintf(fp, "==");  \
+            break;              \
+        case OP_IS_NE:          \
+            fprintf(fp, "!=");  \
+            break;              \
+        case OP_IS_S:           \
+            fprintf(fp, "<");   \
+            break;              \
+        case OP_IS_SE:          \
+            fprintf(fp, "<=");  \
+            break;              \
         case UNDEF_OPER_TYPE:   \
             fprintf(fp, "?");   \
             break;              \
@@ -136,9 +156,9 @@ const double PRECISION = 1e-6;
 #define IS_KEYWORD(node) (TYPE(node) == TYPE_KEYWORD)
 
 #define IS_LOGICAL_OP(node) (IS_OP(node) && (VAL_OP(node) == OP_AND   || VAL_OP(node) == OP_IS_B  ||\
-                                       VAL_OP(node) == OP_IS_BE || VAL_OP(node) == OP_IS_EQ       ||\
-                                       VAL_OP(node) == OP_IS_NE || VAL_OP(node) == OP_IS_S        ||\
-                                       VAL_OP(node) == OP_IS_SE || VAL_OP(node) == OP_OR))
+                                             VAL_OP(node) == OP_IS_BE || VAL_OP(node) == OP_IS_EQ ||\
+                                             VAL_OP(node) == OP_IS_NE || VAL_OP(node) == OP_IS_S  ||\
+                                             VAL_OP(node) == OP_IS_SE || VAL_OP(node) == OP_OR))
 
 #define VAL_N(node) (node)->val.val.dbl
 

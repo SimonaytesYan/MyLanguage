@@ -84,7 +84,7 @@ void put_text_to_file(const char *text, FILE *fp, size_t N)
     assert(text != nullptr);
     assert(fp   != nullptr);
 
-    for(int i = 0; i < N; i++)
+    for(size_t i = 0; i < N; i++)
     {
         char c = text[i];
         if (c == '\0')

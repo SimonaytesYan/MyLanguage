@@ -15,7 +15,8 @@ void PrintStackElemInLog(ListElem_t val)
 
 #include "../List/List.h"
 
-static List VARS   = {};
+static List VARS  = {}; //! This list stores vars:      name of variable + addres in memory(offset from addres stored in rdx) 
+static List FUNCS = {}; //! This list stores fucnitons: name of function + number of label indication the beginning of the function 
 
 const ListElem_t FICT_VAR = {"#", 0};
 
@@ -232,9 +233,9 @@ int PutKeyword(Node* node, FILE* output_file)
     {
         case KEYWORD_VAR:
         {
-            CheckSyntaxError(L(node) != nullptr && IS_VAR(L(node)), L(node), -1);
-            printf("add var <%s>\n", VAL_VAR(L(node)));
-            ReturnIfError(AddVar(VAL_VAR(L(node))));
+            CheckSyntaxError(R(node) != nullptr && IS_VAR(R(node)), R(node), -1);
+            printf("add var <%s>\n", VAL_VAR(R(node)));
+            ReturnIfError(AddVar(VAL_VAR(R(node))));
             return 0;
         }
         case KEYWORD_IF:

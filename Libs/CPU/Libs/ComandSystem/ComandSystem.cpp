@@ -18,7 +18,7 @@ void DumpLabels(Label* labels)
     if (labels == nullptr)
         return;
         
-    for(int i = 0; i < MAX_LABELS/10; i++)
+    for(size_t i = 0; i < MAX_LABELS/10; i++)
     {
         printf("label[%d]\n", i);
         printf("{\n");
@@ -37,12 +37,12 @@ void DumpCPU(CPU* cpu)
     LogPrintf("code             = %p\n", cpu->code);
 
     LogPrintf("regs:\n{\n");
-    for(int i = 0; i < REG_N; i++)
+    for(size_t i = 0; i < REG_N; i++)
         LogPrintf("\tr%cx = %d\n", i + 'a', cpu->regs[i + 1]);
     LogPrintf("}\n");
 
     LogPrintf("ram:\n{\n");
-    for(int i = 0; i < RAM_SIZE; i++)
+    for(size_t i = 0; i < RAM_SIZE; i++)
         LogPrintf("\t[%d] = %d\n", i, cpu->ram[i]);
     LogPrintf("}\n");
 
