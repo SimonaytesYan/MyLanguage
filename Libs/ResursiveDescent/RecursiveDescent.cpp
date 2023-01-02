@@ -170,8 +170,6 @@ static Node* GetCall(Node** ip)
         (*ip)++;
 
         Node* old_val = val;
-        R(val) = NodeCtorFict();
-        val = R(val);
 
         Node* new_node = nullptr;                                                   //!Get args
         bool more_arg = false;
@@ -224,17 +222,17 @@ static Node* GetFunction(Node** ip)
         CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == '(', *ip, nullptr);
         (*ip)++;
 
-        Node* old_val = val;
-        L(val)  = NodeCtorFict();
+        Node* old_val  = val;
+        L(val) = NodeCtorFict();
         val = L(val);
-
+        
         Node* new_node = nullptr;
-        bool more_arg = false;
+        bool  more_arg = false;
         while ((new_node = GetVar(ip)))
         {
-            L(val)  = NodeCtorFict();
-            LR(val) = new_node;
-            val = L(val);
+            R(val)  = NodeCtorFict();
+            RL(val) = new_node;
+            val     = R(val);
             if (TYPE(*ip) == TYPE_SYMB && VAL_SYMB(*ip) == ',')
             {
                 more_arg = true;
