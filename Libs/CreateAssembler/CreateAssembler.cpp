@@ -282,7 +282,7 @@ int PutKeyword(Node* node, FILE* output_file)
             fprintf(output_file, "label%d:\n", end_loop_label);
             return 0;
         }
-    
+
         default:
             break;
     }

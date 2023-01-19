@@ -188,47 +188,71 @@ static void WriteNodeAndEdge(Node* node, void* fp_void)
 
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wformat"
-    fprintf(fp, "Node%06X[style = \"filled,rounded\", fillcolor = \"#B1FF9F\", label = \"{<i>%06X \\n | { <v>",
-                     node,                                                                   node);
+    const char light_green[]  = "#B1FF9F";
+    const char light_red[]    = "#FF4646";
+    const char light_blue[]   = "#87A7FF";
+    const char light_grey[]   = "#A6A1A1";
+    const char light_yellow[] = "#B1FF9F";
+
+    const char node_format[] = "Node%06X[style = \"filled,rounded\", fillcolor = \"%s\", label = \"{{ <v>";
     
     switch (node->val.type)
     {
         case TYPE_SYMB:
+        {
+            fprintf(fp, node_format, node, light_blue, node);
             fprintf(fp, "SYMB | [%c]%d", VAL_SYMB(node), VAL_SYMB(node));
             break;
+        }
         case TYPE_NUM:
+        {
+            fprintf(fp, node_format, node, light_blue, node);
             fprintf(fp, "NUM | %d", VAL_N(node));
             break;
+        }
         case TYPE_OP:
+        {
+            fprintf(fp, node_format, node, light_yellow, node);
             fprintf(fp, "OPER | ");
             fprintOper
             break;
+        }
         case TYPE_VAR:
+        {
+            fprintf(fp, node_format, node, light_blue, node);
             fprintf(fp, "VAR | %s ", VAL_VAR(node));
             break;
+        }
         case TYPE_KEYWORD:
         {
+            fprintf(fp, node_format, node, light_yellow, node);
             fprintf(fp, "KEYWORD | %d ", VAL_KEYWORD(node));
             break;
         }
         case TYPE_FUNCTION:
         {
+            fprintf(fp, node_format, node, light_blue, node);
             fprintf(fp, "FUNCTION | [%s] ", node->val.val.function);
             break;
         }
         case TYPE_CALL:
         {
+            fprintf(fp, node_format, node, light_green, node);
             fprintf(fp, "CALL | [%s] ", node->val.val.function);
             break;
         }
         case TYPE_RETURN:
         {
+            fprintf(fp, node_format, node, light_red, node);
             fprintf(fp, "RETURN");
             break;
         }
         case TYPE_FICT:
+        {
+            fprintf(fp, node_format, node, light_grey, node);
             fprintf(fp, "FICT ");
             break;
+        }
         case UNDEF_NODE_TYPE:
             fprintf(fp, "UNDEF");
             break;
@@ -237,10 +261,9 @@ static void WriteNodeAndEdge(Node* node, void* fp_void)
             break;
     }
 
-    fprintf(fp, "} | {line = %ld | simb = %ld}",
+    fprintf(fp, "} | {line = %ld | simb = %ld}}\"]\n",
                 node->val.number_cmd_line_in_text, node->val.number_cmd_in_text);
-    fprintf(fp, "| { <l> %06X  |<r>  %06X}}\"]\n", node->left, node->right);
-    
+                
     if (node->left != nullptr)
         fprintf(fp, "Node%06X -> Node%06X[xlabel = \"L\"]\n", node, node->left);
     if (node->right != nullptr)
