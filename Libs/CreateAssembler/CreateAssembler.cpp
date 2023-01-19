@@ -227,6 +227,53 @@ int PutOperator(Node* node, FILE* output_file)
     return 0;
 }
 
+int PutIf(Node* node, FILE* output_file)
+{    
+    int else_label     = LabelCounter();
+    int end_else_label = LabelCounter();
+
+    CheckSyntaxError(L(node) != nullptr, L(node), -1);
+    PutNodeInFile(L(node), output_file);                    //cond
+    fprintf(output_file, "push 0\n");
+    fprintf(output_file, "jne label%d\n", else_label);      //go to else branch
+
+    StartScope();
+    PutNodeInFile(RL(node), output_file);                   //true branch
+    fprintf(output_file, "jmp label%d\n", end_else_label);  //skip else branch
+    EndScope();
+
+    fprintf(output_file, "label%d:\n", else_label);         //else branch
+    StartScope();
+    PutNodeInFile(RR(node), output_file);            
+    EndScope();
+
+    fprintf(output_file, "label%d:\n", end_else_label);
+    
+    return 0;
+}
+
+int PutWhile(Node* node, FILE* output_file)
+{ 
+    CheckSyntaxError(L(node) != nullptr, L(node), -1);
+
+    int start_loop_label = LabelCounter();
+    int end_loop_label   = LabelCounter();
+            
+    fprintf(output_file, "label%d:\n", start_loop_label);
+    PutNodeInFile(L(node), output_file);                        //cond
+    fprintf(output_file, "push 0\n");
+    fprintf(output_file, "jne label%d\n", end_loop_label);      //end loop
+
+    StartScope();                                               //loop body
+    PutNodeInFile(R(node), output_file);                    
+    EndScope();
+    fprintf(output_file, "jmp label%d\n", start_loop_label);   //end loop
+            
+    fprintf(output_file, "label%d:\n", end_loop_label);
+
+    return 0;
+}
+
 int PutKeyword(Node* node, FILE* output_file)
 {
     switch (VAL_KEYWORD(node))
@@ -240,47 +287,14 @@ int PutKeyword(Node* node, FILE* output_file)
         }
         case KEYWORD_IF:
         {
-            int else_label     = LabelCounter();
-            int end_else_label = LabelCounter();
-
-            CheckSyntaxError(L(node) != nullptr, L(node), -1);
-            PutNodeInFile(L(node), output_file);                    //cond
-            fprintf(output_file, "push 0\n");
-            fprintf(output_file, "jne label%d\n", else_label);      //go to else branch
-
-            StartScope();
-            PutNodeInFile(RL(node), output_file);                   //true branch
-            fprintf(output_file, "jmp label%d\n", end_else_label);  //skip else branch
-            EndScope();
-
-            fprintf(output_file, "label%d:\n", else_label);         //else branch
-            StartScope();
-            PutNodeInFile(RR(node), output_file);            
-            EndScope();       
-            fprintf(output_file, "label%d:\n", end_else_label);
-
-            return 0;
+            ReturnIfError(PutIf(node, output_file));
+            break;
         }
 
         case KEYWORD_WHILE:
         {
-            CheckSyntaxError(L(node) != nullptr, L(node), -1);
-
-            int start_loop_label = LabelCounter();
-            int end_loop_label   = LabelCounter();
-            
-            fprintf(output_file, "label%d:\n", start_loop_label);
-            PutNodeInFile(L(node), output_file);                        //cond
-            fprintf(output_file, "push 0\n");
-            fprintf(output_file, "jne label%d\n", end_loop_label);      //end loop
-
-            StartScope();                                               //loop body
-            PutNodeInFile(R(node), output_file);                    
-            EndScope();
-            fprintf(output_file, "jmp label%d\n", start_loop_label);   //end loop
-            
-            fprintf(output_file, "label%d:\n", end_loop_label);
-            return 0;
+            ReturnIfError(PutWhile(node, output_file));
+            break;
         }
 
         default:

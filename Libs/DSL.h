@@ -85,7 +85,7 @@ const double PRECISION = 1e-6;
             fprintf(fp, "=");   \
             break;              \
         case OP_IS_B:           \
-            fprintf(fp, ">");   \
+            fprintf(fp, "&#62;");   \
             break;              \
         case OP_IS_BE:          \
             fprintf(fp, ">=");  \
@@ -97,7 +97,7 @@ const double PRECISION = 1e-6;
             fprintf(fp, "!=");  \
             break;              \
         case OP_IS_S:           \
-            fprintf(fp, "<");   \
+            fprintf(fp, "&#60;");   \
             break;              \
         case OP_IS_SE:          \
             fprintf(fp, "<=");  \

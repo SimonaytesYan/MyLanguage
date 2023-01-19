@@ -226,7 +226,10 @@ static void WriteNodeAndEdge(Node* node, void* fp_void)
         case TYPE_KEYWORD:
         {
             fprintf(fp, node_format, node, light_yellow, node);
-            fprintf(fp, "KEYWORD | %d ", VAL_KEYWORD(node));
+            if (VAL_KEYWORD(node) == 0)
+                fprintf(fp, "KEYWORD | %d ", 0);
+            else
+                fprintf(fp, "KEYWORD | %s ", KEYWORDS[VAL_KEYWORD(node) - 1]);
             break;
         }
         case TYPE_FUNCTION:

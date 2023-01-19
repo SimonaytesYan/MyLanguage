@@ -4,7 +4,6 @@
 #include "../Logging/Logging.h"
 
 static Node* last_comand = 0;
-#define DEBUG
 
 //----------------------------
 //Grammar   ::= CreateVar* Function* Scope
@@ -606,7 +605,10 @@ static Node* GetInOutCall(Node** ip)
         return new_node;
     }
     
-    printf("There isnt in and out\n");
+    #ifdef DEBUG
+        printf("There isnt in and out\n");
+    #endif
+    
     new_node = GetPow(ip);
     #ifdef DEBUG
         printf("(end InAndOut)\n");
