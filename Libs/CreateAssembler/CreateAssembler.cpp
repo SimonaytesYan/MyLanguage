@@ -122,6 +122,9 @@ int CreateAsmFromTree(Tree* tree, const char* output_file)
 
     ReturnIfError(PutNodeInFile(tree->root, fp));
 
+    #ifdef DEBUG
+        printf("end asm tree\n");
+    #endif
     fclose(fp);
     return 0;
 }
@@ -274,12 +277,56 @@ int PutWhile(Node* node, FILE* output_file)
     return 0;
 }
 
+int GetArgsInFunction(Node* node, FILE* output_file)
+{
+    if (node == nullptr)
+        return 0;
+
+    if (IS_VAR(node))
+    {
+        ReturnIfError(AddVar(VAL_VAR(node)));
+        int var_index = GetVarIndex(VAL_VAR(node));
+
+        fprintf(output_file, "pop [%d]\n", var_index);
+    }
+    
+    ReturnIfError(GetArgsInFunction(L(node), output_file));
+    ReturnIfError(GetArgsInFunction(R(node), output_file));
+
+    return 0;
+}
+
+int PutFunction(Node* node, FILE* output_file)
+{
+    int skip_label  = LabelCounter();
+    int start_label = LabelCounter();
+
+    StartScope();
+
+    fprintf(output_file, "jmp label%d\n", skip_label);      //jump to skip_label
+            
+    fprintf(output_file, "label%d:\n", start_label);        //start_function_label
+    
+    GetArgsInFunction(L(node), output_file);                //get args
+
+    PutNodeInFile(R(node), output_file);                    //function code
+
+    fprintf(output_file, "label%d:\n", skip_label);         //skip_label
+
+    EndScope();
+
+    return 0;
+}
+
 int PutKeyword(Node* node, FILE* output_file)
 {
     switch (VAL_KEYWORD(node))
     {
         case KEYWORD_VAR:
         {
+            #ifdef DEBUG
+                printf("var\n");
+            #endif
             CheckSyntaxError(R(node) != nullptr && IS_VAR(R(node)), R(node), -1);
             printf("add var <%s>\n", VAL_VAR(R(node)));
             ReturnIfError(AddVar(VAL_VAR(R(node))));
@@ -287,6 +334,9 @@ int PutKeyword(Node* node, FILE* output_file)
         }
         case KEYWORD_IF:
         {
+            #ifdef DEBUG
+                printf("if\n");
+            #endif
             ReturnIfError(PutIf(node, output_file));
             break;
         }
@@ -315,27 +365,51 @@ int PutNodeInFile(Node* node, FILE* output_file)
     {
         case TYPE_FICT:
         {
+            #ifdef DEBUG
+                printf("fict\n");
+            #endif
             PutNodeInFile(L(node), output_file);
             PutNodeInFile(R(node), output_file);
             break;
         }
         case TYPE_VAR:
         {
+            #ifdef DEBUG
+                printf("put variable\n");
+            #endif
             ReturnIfError(PutVar(node, output_file));
             break;
         }
         case TYPE_NUM:
         {
+            #ifdef DEBUG
+                printf("num\n");
+            #endif
             fprintf(output_file, "push %d\n", VAL_N(node));
             break;
         }
         case TYPE_KEYWORD:
         {
+            #ifdef DEBUG
+                printf("keyword ");
+            #endif
             ReturnIfError(PutKeyword(node, output_file));
             break;
         }
+        case TYPE_FUNCTION:
+        {
+            #ifdef DEBUG
+                printf("function\n");
+            #endif
+            ReturnIfError(PutFunction(node, output_file));
+            break;
+        }
+
         case TYPE_OP:
         {
+            #ifdef DEBUG
+                printf("operator\n");
+            #endif
             ReturnIfError(PutOperator(node, output_file));
             break;
         }
