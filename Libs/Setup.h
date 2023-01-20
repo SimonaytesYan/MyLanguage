@@ -3,7 +3,7 @@
 
 #include <cstddef>
 
-#define DEBUG
+//#define DEBUG
 
 enum NODE_TYPES
 {
@@ -55,6 +55,7 @@ enum OPER_TYPES
     OP_AND          = 15,
     OP_OR           = 16,
     OP_EQ           = 17,
+    OP_SQRT         = 18,
 };
 
 struct Node_t 
@@ -87,7 +88,7 @@ struct Keyword_t
 
 const int MAX_VAR_SIZE      = 20;
 
-const int STD_OPERATORS_NUM = 16;
+const int STD_OPERATORS_NUM = 17;
 
 const Operator_t STD_OPERATORS[] = {
                                     {"+",   OP_PLUS },
@@ -106,6 +107,7 @@ const Operator_t STD_OPERATORS[] = {
                                     {"!=",  OP_IS_NE},
                                     {"and", OP_AND  },
                                     {"or",  OP_OR   },
+                                    {"sqrt", OP_SQRT},
                                    };
 
 const int KEYWORDS_NUM = 11;

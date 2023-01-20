@@ -6,6 +6,11 @@ C_FLAGS   = -D _DEBUG -ggdb3 -std=c++2a -O0 -Wall -Wextra -Weffc++ -Waggressive-
 all: logging recursive_descent in_and_out lexical_analis back_end
 	g++ main.cpp Obj/LexicalAnalysis.o Obj/Logging.o Obj/RecursiveDescent.o Obj/InAndOut.o Obj/Backend.o $(C_FLAGS) -o Exe/Start.exe
 
+run:
+	cd Libs/CPU
+	.\Exe\Comp.exe ..\..\Main.sy
+	Exe/Start.exe a.sy
+
 back_end: logging in_and_out
 	g++ -c Libs/CreateAssembler/CreateAssembler.cpp Obj/Logging.o Obj/InAndOut.o $(C_FLAGS) -o Obj/Backend.o
 

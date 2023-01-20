@@ -53,7 +53,11 @@ int  PutWhile(Node* node, FILE* output_file);
 
 int  PutFunction(Node* node, FILE* output_file);
 
+int  PutCall(Node* node, FILE* output_file);
+
 int  PutReturn(Node* node, FILE* output_file);
+
+int  GetLastVarIndexToChangeOffset(const char* var);
 
 void StartScope();
 
@@ -62,6 +66,8 @@ void StartFuncScope();
 int  EndScope();
 
 int  GetArgsInFunction(Node* node, FILE* output_file);
+
+int  PutArgsInCallFunc(Node* node, FILE* output_file);
 
 //!-----------------
 //!@return error code
@@ -184,7 +190,6 @@ int GetVarIndex(const char* var, bool* is_local)
     ListEnd(&VARS, &list_end);
     while (index != -1)
     {
-        printf("VARS[i] = <%s>\n", VARS.data[index].val.name);
         if (!strcmp(VARS.data[index].val.name, START_FUNC_SCOPE.name))
             *is_local = true;
 
@@ -196,6 +201,17 @@ int GetVarIndex(const char* var, bool* is_local)
     }
 
     return -1;
+}
+
+int  GetLastVarIndexToChangeOffset()
+{
+    int list_end = 0;
+    ListEnd(&VARS, &list_end);
+
+    if (list_end == -1)
+        return -1;
+
+    return VARS.data[list_end].val.index;
 }
 
 int CreateAsmFromTree(Tree* tree, const char* output_file)
@@ -383,6 +399,22 @@ int PutWhile(Node* node, FILE* output_file)
     return 0;
 }
 
+int  PutArgsInCallFunc(Node* node, FILE* output_file)
+{
+    if (node == nullptr)
+        return 0;
+    
+    if (TYPE(node) == TYPE_FICT)
+    {
+        ReturnIfError(PutArgsInCallFunc(R(node), output_file));
+        ReturnIfError(PutArgsInCallFunc(L(node), output_file));
+    }
+    else
+        PutNodeInFile(node, output_file);
+
+    return 0;
+}
+
 int GetArgsInFunction(Node* node, FILE* output_file)
 {
     if (node == nullptr)
@@ -404,6 +436,8 @@ int PutFunction(Node* node, FILE* output_file)
 {
     int skip_label  = LabelCounter();
     int start_label = LabelCounter();
+    
+    AddFunction(VAL_FUNC(node), start_label);
 
     StartScope();                                           //!Start new scope
     StartFuncScope();                                       //!All variable, that will created is local
@@ -419,8 +453,6 @@ int PutFunction(Node* node, FILE* output_file)
     fprintf(output_file, "label%d:\n", skip_label);         //!skip_label
 
     EndScope();
-
-    AddFunction(VAL_FUNC(node), start_label);
 
     return 0;
 }
@@ -466,6 +498,28 @@ int PutReturn(Node* node, FILE* output_file)
     ReturnIfError(PutNodeInFile(R(node), output_file));
 
     fprintf(output_file, "ret\n");
+    return 0;
+}
+
+int  PutCall(Node* node, FILE* output_file)
+{
+    fprintf(output_file, "\nPUT_ARGS:\n");
+    PutArgsInCallFunc(L(node), output_file);
+    PutArgsInCallFunc(R(node), output_file);
+
+    int offset_change = GetLastVarIndexToChangeOffset() + 1;
+    fprintf(output_file, "push rdx\n");
+    fprintf(output_file, "push %d\n", offset_change);
+    fprintf(output_file, "add\n");
+    fprintf(output_file, "pop rdx\n");   
+
+    fprintf(output_file, "call label%d\n", GetFuncIndex(VAL_FUNC(node)));
+
+    fprintf(output_file, "push rdx\n");
+    fprintf(output_file, "push %d\n", offset_change);
+    fprintf(output_file, "sub\n");
+    fprintf(output_file, "pop rdx\n");
+
     return 0;
 }
 
@@ -528,6 +582,15 @@ int PutNodeInFile(Node* node, FILE* output_file)
                 printf("return\n");
             #endif
             ReturnIfError(PutReturn(node, output_file));
+            break;
+        }
+
+        case TYPE_CALL:
+        {
+            #ifdef DEBUG
+                printf("return\n");
+            #endif
+            ReturnIfError(PutCall(node, output_file));
             break;
         }
 
