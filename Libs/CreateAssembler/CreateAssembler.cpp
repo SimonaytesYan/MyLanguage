@@ -68,19 +68,27 @@ int  GetArgsInFunction(Node* node, FILE* output_file);
 //!------------
 int AddVar(const char* var)
 {
-    int index   = 0;
-    int list_end = 0;
+    int var_index = 1;
+    int index     = 0;
+    int list_end  = 0;
+
     ListBegin(&VARS, &index);
     ListEnd(&VARS, &list_end);
+
     while (index != -1)
     {
+        if (!strcmp(VARS.data[index].val.name, START_FUNC_SCOPE.name))
+            var_index = 0;
         if (!strcmp(VARS.data[index].val.name, var))
             return -1;
         if (index == list_end)
             break;
         ListIterate(&VARS, &index);
+        var_index++;
     }
-    ListElem_t value = {(char*)var, VARS.size};
+    if (VARS.size == 0)
+        var_index = 0;
+    ListElem_t value = {(char*)var, var_index};
     ListInsert(&VARS, value, VARS.size);
 
     return 0;
