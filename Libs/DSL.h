@@ -170,6 +170,8 @@ const double PRECISION = 1e-6;
 
 #define VAL_KEYWORD(node) (node)->val.val.keyword
 
+#define VAL_FUNC(node) (node)->val.val.function
+
 #define TYPE(node) (node)->val.type
 
 

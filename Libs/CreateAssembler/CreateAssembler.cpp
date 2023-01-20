@@ -29,36 +29,39 @@ int LabelCounter()
     return cnt;
 }
 
-int AddVar(const char* var);
+int  AddVar(const char* var);
 
-int GetVarIndex(const char* var, bool* is_local);
+int  AddFunction(const char* name, int label_number);
 
-int PutVar(Node* node, FILE* output_file);
+int  GetVarIndex(const char* var, bool* is_local);
 
-int GetVar(Node* node, FILE* output_file);
+int  GetFuncIndex(const char* name);
 
-int PutNodeInFile(Node* node, FILE* output_file);
+int  PutVar(Node* node, FILE* output_file);
 
-int PutKeyword(Node* node, FILE* output_file);
+int  GetVar(Node* node, FILE* output_file);
 
-int PutOperator(Node* node, FILE* output_file);
+int  PutNodeInFile(Node* node, FILE* output_file);
 
-int PutIf(Node* node, FILE* output_file);
+int  PutKeyword(Node* node, FILE* output_file);
 
-int PutWhile(Node* node, FILE* output_file);
+int  PutOperator(Node* node, FILE* output_file);
 
-int PutFunction(Node* node, FILE* output_file);
+int  PutIf(Node* node, FILE* output_file);
 
-int PutReturn(Node* node, FILE* output_file);
+int  PutWhile(Node* node, FILE* output_file);
+
+int  PutFunction(Node* node, FILE* output_file);
+
+int  PutReturn(Node* node, FILE* output_file);
 
 void StartScope();
 
 void StartFuncScope();
 
-int EndScope();
+int  EndScope();
 
-int GetArgsInFunction(Node* node, FILE* output_file);
-
+int  GetArgsInFunction(Node* node, FILE* output_file);
 
 //!-----------------
 //!@return error code
@@ -79,6 +82,33 @@ int AddVar(const char* var)
     }
     ListElem_t value = {(char*)var, VARS.size};
     ListInsert(&VARS, value, VARS.size);
+
+    return 0;
+}
+
+//!-----------------
+//!@return error code
+//!------------
+int AddFunction(const char* name, int label_number)
+{
+    int index   = 0;
+    int list_end = 0;
+    
+    DUMP_L(&FUNCS);
+    ListBegin(&FUNCS, &index);
+    ListEnd(&FUNCS, &list_end);
+    while (index != -1)
+    {
+        if (!strcmp(FUNCS.data[index].val.name, name))
+            return -1;
+        if (index == list_end)
+            break;
+        ListIterate(&FUNCS, &index);
+    }
+    ListElem_t value = {(char*)name, label_number};
+    ListInsert(&FUNCS, value, FUNCS.size);
+
+    DUMP_L(&FUNCS);
 
     return 0;
 }
@@ -113,6 +143,26 @@ int EndScope()
     return -1;    
 }
 
+int  GetFuncIndex(const char* name)
+{
+    int index   = 0;
+    int list_end = 0;
+
+    ListBegin(&FUNCS, &index);
+    ListEnd(&FUNCS, &list_end);
+    while (index != -1)
+    {
+
+        if (!strcmp(FUNCS.data[index].val.name, name))
+            return FUNCS.data[index].val.index;
+        if (index == list_end)
+            break;
+        ListIterate(&FUNCS, &index);
+    }
+
+    return -1;
+}
+
 //!-----------------
 //!@return index of var in RAM and -1 if var not found
 //!------------
@@ -145,7 +195,8 @@ int CreateAsmFromTree(Tree* tree, const char* output_file)
     TreeCheck(tree);
 
     FILE* fp = fopen(output_file, "w");
-    ListCtor(&VARS, 0);
+    ListCtor(&VARS,  0);
+    ListCtor(&FUNCS, 0);
     CHECK(fp == nullptr, "fp = nullptr", -1);
 
     ReturnIfError(PutNodeInFile(tree->root, fp));
@@ -283,16 +334,16 @@ int PutIf(Node* node, FILE* output_file)
     int end_else_label = LabelCounter();
 
     CheckSyntaxError(L(node) != nullptr, L(node), -1);
-    PutNodeInFile(L(node), output_file);                    //<cond
+    PutNodeInFile(L(node), output_file);                    //!cond
     fprintf(output_file, "push 0\n");
-    fprintf(output_file, "jne label%d\n", else_label);      //<go to else branch
+    fprintf(output_file, "jne label%d\n", else_label);      //!go to else branch
 
     StartScope();
-    PutNodeInFile(RL(node), output_file);                   //<true branch
-    fprintf(output_file, "jmp label%d\n", end_else_label);  //<skip else branch
+    PutNodeInFile(RL(node), output_file);                   //!true branch
+    fprintf(output_file, "jmp label%d\n", end_else_label);  //!skip else branch
     EndScope();
 
-    fprintf(output_file, "label%d:\n", else_label);         //<else branch
+    fprintf(output_file, "label%d:\n", else_label);         //!else branch
     StartScope();
     PutNodeInFile(RR(node), output_file);            
     EndScope();
@@ -310,14 +361,14 @@ int PutWhile(Node* node, FILE* output_file)
     int end_loop_label   = LabelCounter();
             
     fprintf(output_file, "label%d:\n", start_loop_label);
-    PutNodeInFile(L(node), output_file);                        //<cond
+    PutNodeInFile(L(node), output_file);                        //!cond
     fprintf(output_file, "push 0\n");
-    fprintf(output_file, "jne label%d\n", end_loop_label);      //<end loop
+    fprintf(output_file, "jne label%d\n", end_loop_label);      //!end loop
 
-    StartScope();                                               //<loop body
+    StartScope();                                               //!loop body
     PutNodeInFile(R(node), output_file);                    
     EndScope();
-    fprintf(output_file, "jmp label%d\n", start_loop_label);   //<end loop
+    fprintf(output_file, "jmp label%d\n", start_loop_label);   //!end loop
             
     fprintf(output_file, "label%d:\n", end_loop_label);
 
@@ -346,20 +397,22 @@ int PutFunction(Node* node, FILE* output_file)
     int skip_label  = LabelCounter();
     int start_label = LabelCounter();
 
-    StartScope();                                           //<Start new scope
-    StartFuncScope();                                       //<All variable, that will created is local
+    StartScope();                                           //!Start new scope
+    StartFuncScope();                                       //!All variable, that will created is local
 
-    fprintf(output_file, "jmp label%d\n", skip_label);      //<jump to skip_label
+    fprintf(output_file, "jmp label%d\n", skip_label);      //!jump to skip_label
             
-    fprintf(output_file, "label%d:\n", start_label);        //<start_function_label
+    fprintf(output_file, "label%d:\n", start_label);        //!start_function_label
     
-    GetArgsInFunction(L(node), output_file);                //<get args
+    GetArgsInFunction(L(node), output_file);                //!get args
 
-    PutNodeInFile(R(node), output_file);                    //<function code
+    PutNodeInFile(R(node), output_file);                    //!function code
 
-    fprintf(output_file, "label%d:\n", skip_label);         //<skip_label
+    fprintf(output_file, "label%d:\n", skip_label);         //!skip_label
 
     EndScope();
+
+    AddFunction(VAL_FUNC(node), start_label);
 
     return 0;
 }
