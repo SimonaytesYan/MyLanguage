@@ -41,21 +41,24 @@ int PutNodeInFile(Node* node, FILE* output_file);
 
 int PutKeyword(Node* node, FILE* output_file);
 
-void StartScope();
-
-void StartFuncScope();
-
-int EndScope();
-
 int PutOperator(Node* node, FILE* output_file);
 
 int PutIf(Node* node, FILE* output_file);
 
 int PutWhile(Node* node, FILE* output_file);
 
+int PutFunction(Node* node, FILE* output_file);
+
+int PutReturn(Node* node, FILE* output_file);
+
+void StartScope();
+
+void StartFuncScope();
+
+int EndScope();
+
 int GetArgsInFunction(Node* node, FILE* output_file);
 
-int PutFunction(Node* node, FILE* output_file);
 
 //!-----------------
 //!@return error code
@@ -280,16 +283,16 @@ int PutIf(Node* node, FILE* output_file)
     int end_else_label = LabelCounter();
 
     CheckSyntaxError(L(node) != nullptr, L(node), -1);
-    PutNodeInFile(L(node), output_file);                    //cond
+    PutNodeInFile(L(node), output_file);                    //<cond
     fprintf(output_file, "push 0\n");
-    fprintf(output_file, "jne label%d\n", else_label);      //go to else branch
+    fprintf(output_file, "jne label%d\n", else_label);      //<go to else branch
 
     StartScope();
-    PutNodeInFile(RL(node), output_file);                   //true branch
-    fprintf(output_file, "jmp label%d\n", end_else_label);  //skip else branch
+    PutNodeInFile(RL(node), output_file);                   //<true branch
+    fprintf(output_file, "jmp label%d\n", end_else_label);  //<skip else branch
     EndScope();
 
-    fprintf(output_file, "label%d:\n", else_label);         //else branch
+    fprintf(output_file, "label%d:\n", else_label);         //<else branch
     StartScope();
     PutNodeInFile(RR(node), output_file);            
     EndScope();
@@ -307,14 +310,14 @@ int PutWhile(Node* node, FILE* output_file)
     int end_loop_label   = LabelCounter();
             
     fprintf(output_file, "label%d:\n", start_loop_label);
-    PutNodeInFile(L(node), output_file);                        //cond
+    PutNodeInFile(L(node), output_file);                        //<cond
     fprintf(output_file, "push 0\n");
-    fprintf(output_file, "jne label%d\n", end_loop_label);      //end loop
+    fprintf(output_file, "jne label%d\n", end_loop_label);      //<end loop
 
-    StartScope();                                               //loop body
+    StartScope();                                               //<loop body
     PutNodeInFile(R(node), output_file);                    
     EndScope();
-    fprintf(output_file, "jmp label%d\n", start_loop_label);   //end loop
+    fprintf(output_file, "jmp label%d\n", start_loop_label);   //<end loop
             
     fprintf(output_file, "label%d:\n", end_loop_label);
 
@@ -396,6 +399,15 @@ int PutKeyword(Node* node, FILE* output_file)
     return 0;
 }
 
+int PutReturn(Node* node, FILE* output_file)
+{
+    ReturnIfError(PutNodeInFile(L(node), output_file));
+    ReturnIfError(PutNodeInFile(R(node), output_file));
+
+    fprintf(output_file, "ret\n");
+    return 0;
+}
+
 int PutNodeInFile(Node* node, FILE* output_file)
 {
     DUMP_L(&VARS);
@@ -439,12 +451,22 @@ int PutNodeInFile(Node* node, FILE* output_file)
             ReturnIfError(PutKeyword(node, output_file));
             break;
         }
+
         case TYPE_FUNCTION:
         {
             #ifdef DEBUG
                 printf("function\n");
             #endif
             ReturnIfError(PutFunction(node, output_file));
+            break;
+        }
+
+        case TYPE_RETURN:
+        {
+            #ifdef DEBUG
+                printf("return\n");
+            #endif
+            ReturnIfError(PutReturn(node, output_file));
             break;
         }
 
