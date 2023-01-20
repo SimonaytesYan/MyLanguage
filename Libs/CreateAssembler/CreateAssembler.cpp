@@ -18,7 +18,9 @@ void PrintStackElemInLog(ListElem_t val)
 static List VARS  = {}; //! This list stores vars:      name of variable + addres in memory(offset from addres stored in rdx) 
 static List FUNCS = {}; //! This list stores fucnitons: name of function + number of label indication the beginning of the function 
 
-const ListElem_t FICT_VAR = {"#", 0};
+const ListElem_t START_SCOPE      = {"#", 0};
+
+const ListElem_t START_FUNC_SCOPE = {"*", 0};
 
 int LabelCounter()
 {
@@ -29,13 +31,31 @@ int LabelCounter()
 
 int AddVar(const char* var);
 
-int GetVarIndex(const char* var);
+int GetVarIndex(const char* var, bool* is_local);
 
 int PutVar(Node* node, FILE* output_file);
+
+int GetVar(Node* node, FILE* output_file);
 
 int PutNodeInFile(Node* node, FILE* output_file);
 
 int PutKeyword(Node* node, FILE* output_file);
+
+void StartScope();
+
+void StartFuncScope();
+
+int EndScope();
+
+int PutOperator(Node* node, FILE* output_file);
+
+int PutIf(Node* node, FILE* output_file);
+
+int PutWhile(Node* node, FILE* output_file);
+
+int GetArgsInFunction(Node* node, FILE* output_file);
+
+int PutFunction(Node* node, FILE* output_file);
 
 //!-----------------
 //!@return error code
@@ -56,18 +76,18 @@ int AddVar(const char* var)
     }
     ListElem_t value = {(char*)var, VARS.size};
     ListInsert(&VARS, value, VARS.size);
-    //int begin = 0;
-    //ListBegin(&VARS, &begin);
-    //printf("begin = %d\n", begin);
-    //printf("VARS.data[0].name = <%s>\n", VARS.data[begin].val.name);
-    //printf("VARS.data[0] = <%s>\n", VARS.data[0].val.name);
 
     return 0;
 }
 
 void StartScope()
 {
-    ListInsert(&VARS, FICT_VAR, VARS.size);
+    ListInsert(&VARS, START_SCOPE, VARS.size);
+}
+
+void StartFuncScope()
+{
+    ListInsert(&VARS, START_FUNC_SCOPE, VARS.size);
 }
 
 int EndScope()
@@ -79,7 +99,7 @@ int EndScope()
     
     while (index != -1)
     {
-        if (strcmp(VARS.data[index].val.name, FICT_VAR.name) == 0)
+        if (strcmp(VARS.data[index].val.name, START_SCOPE.name) == 0)
         {
             ListRemove(&VARS, index);
             return 0;
@@ -93,15 +113,20 @@ int EndScope()
 //!-----------------
 //!@return index of var in RAM and -1 if var not found
 //!------------
-int GetVarIndex(const char* var)
+int GetVarIndex(const char* var, bool* is_local)
 {
+    *is_local = false;
     int index   = 0;
     int list_end = 0;
+
     ListBegin(&VARS, &index);
     ListEnd(&VARS, &list_end);
     while (index != -1)
     {
         printf("VARS[i] = <%s>\n", VARS.data[index].val.name);
+        if (!strcmp(VARS.data[index].val.name, START_FUNC_SCOPE.name))
+            *is_local = true;
+
         if (!strcmp(VARS.data[index].val.name, var))
             return VARS.data[index].val.index;
         if (index == list_end)
@@ -131,14 +156,44 @@ int CreateAsmFromTree(Tree* tree, const char* output_file)
 
 int PutVar(Node* node, FILE* output_file)
 {
-    int index = GetVarIndex(VAL_VAR(node));
+    bool is_local = false;
+    int  index    = GetVarIndex(VAL_VAR(node), &is_local);
+
     if (index == -1)
     {
         printf(RED "Unknown var <%s>\n" DEFAULT_COLOR, VAL_VAR(node));
         CheckSyntaxError(0, node, -1);
     }
 
-    fprintf(output_file, "push [%d]\n", index);
+    if (is_local)
+        fprintf(output_file, "push [%d + rdx]\n", index);
+    else
+        fprintf(output_file, "push [%d]\n", index);
+    
+    return 0;
+}
+
+/*!
+ Put in asm file line to take var from processor stack and put it in processor RAM
+ @param[in] node Need to take from it name of var
+ @return         error code  
+*/
+int GetVar(Node* node, FILE* output_file)
+{
+    bool is_local = false;
+    int  index    = GetVarIndex(VAL_VAR(node), &is_local);
+    
+    if (index == -1)
+    {
+        printf(RED "Unknown var <%s>\n" DEFAULT_COLOR, VAL_VAR(node));
+        CheckSyntaxError(0, node, -1);
+    }
+
+    if (is_local)
+        fprintf(output_file, "pop [%d + rdx]\n", index);
+    else
+        fprintf(output_file, "pop [%d]\n", index);
+    
     return 0;
 }
 
@@ -199,13 +254,9 @@ int PutOperator(Node* node, FILE* output_file)
         {
             CheckSyntaxError(R(node) != nullptr, node, -1);
             CheckSyntaxError(IS_VAR(R(node)), R(node), -1);
-
-            int index = GetVarIndex(VAL_VAR(R(node)));
-            if (index == -1)
-                return -1;
-
-            fprintf(output_file, "in\n");       
-            fprintf(output_file, "pop [%d]\n", index);     
+            
+            fprintf(output_file, "in\n");
+            GetVar(R(node), output_file); 
             break;
         }
         case OP_EQ:
@@ -213,16 +264,9 @@ int PutOperator(Node* node, FILE* output_file)
             printf("Equal\n");
             CheckSyntaxError(IS_VAR(L(node)), L(node), -1);
 
-            int index = GetVarIndex(VAL_VAR(L(node)));
-            if (index == -1)
-            {
-                printf(RED "Unknown var <%s>\n" DEFAULT_COLOR, VAL_VAR(L(node)));
-                CheckSyntaxError(0, node, -1);
-            }
-            printf("index = %d\n", index);
-
             ReturnIfError(PutNodeInFile(R(node), output_file));
-            fprintf(output_file, "pop [%d]\n", index);
+
+            GetVar(L(node), output_file);
             break;
         }
 
@@ -285,9 +329,7 @@ int GetArgsInFunction(Node* node, FILE* output_file)
     if (IS_VAR(node))
     {
         ReturnIfError(AddVar(VAL_VAR(node)));
-        int var_index = GetVarIndex(VAL_VAR(node));
-
-        fprintf(output_file, "pop [%d]\n", var_index);
+        ReturnIfError(GetVar(node, output_file));
     }
     
     ReturnIfError(GetArgsInFunction(L(node), output_file));
@@ -301,17 +343,18 @@ int PutFunction(Node* node, FILE* output_file)
     int skip_label  = LabelCounter();
     int start_label = LabelCounter();
 
-    StartScope();
+    StartScope();                                           //<Start new scope
+    StartFuncScope();                                       //<All variable, that will created is local
 
-    fprintf(output_file, "jmp label%d\n", skip_label);      //jump to skip_label
+    fprintf(output_file, "jmp label%d\n", skip_label);      //<jump to skip_label
             
-    fprintf(output_file, "label%d:\n", start_label);        //start_function_label
+    fprintf(output_file, "label%d:\n", start_label);        //<start_function_label
     
-    GetArgsInFunction(L(node), output_file);                //get args
+    GetArgsInFunction(L(node), output_file);                //<get args
 
-    PutNodeInFile(R(node), output_file);                    //function code
+    PutNodeInFile(R(node), output_file);                    //<function code
 
-    fprintf(output_file, "label%d:\n", skip_label);         //skip_label
+    fprintf(output_file, "label%d:\n", skip_label);         //<skip_label
 
     EndScope();
 
