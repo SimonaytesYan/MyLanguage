@@ -15,12 +15,12 @@ void PrintStackElemInLog(ListElem_t val)
 
 #include "../List/List.h"
 
-static List VARS  = {}; //! This list stores vars:      name of variable + addres in memory(offset from addres stored in rdx) 
+static List VARS  = {}; //! This list stores vars:      name of variable + addres in memory(offset from addres stored in rdx if var is local) 
 static List FUNCS = {}; //! This list stores fucnitons: name of function + number of label indication the beginning of the function 
 
-const ListElem_t START_SCOPE      = {"#", 0};
-
-const ListElem_t START_FUNC_SCOPE = {"*", 0};
+const ListElem_t START_SCOPE       = {"#", 0};
+const ListElem_t START_FUNC_SCOPE  = {"*", 0};
+const char       OFFSET_REGISTER[] = "rdx";
 
 int LabelCounter()
 {
@@ -166,7 +166,7 @@ int PutVar(Node* node, FILE* output_file)
     }
 
     if (is_local)
-        fprintf(output_file, "push [%d + rdx]\n", index);
+        fprintf(output_file, "push [%d + %s]\n", index, OFFSET_REGISTER);
     else
         fprintf(output_file, "push [%d]\n", index);
     
@@ -190,7 +190,7 @@ int GetVar(Node* node, FILE* output_file)
     }
 
     if (is_local)
-        fprintf(output_file, "pop [%d + rdx]\n", index);
+        fprintf(output_file, "pop [%d + %s]\n", index, OFFSET_REGISTER);
     else
         fprintf(output_file, "pop [%d]\n", index);
     
