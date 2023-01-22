@@ -102,6 +102,12 @@ const double PRECISION = 1e-6;
         case OP_IS_SE:          \
             fprintf(fp, "<=");  \
             break;              \
+        case OP_NOT:            \
+            fprintf(fp, "!");   \
+            break;              \
+        case OP_SQRT:           \
+            fprintf(fp, "sqrt");\
+            break;              \
         case UNDEF_OPER_TYPE:   \
             fprintf(fp, "?");   \
             break;              \

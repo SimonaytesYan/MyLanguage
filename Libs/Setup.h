@@ -51,7 +51,7 @@ enum OPER_TYPES
     OP_IS_BE        = 11,
     OP_IS_SE        = 12,
     OP_IS_NE        = 13,
-//    OP_NOT          = 14,
+    OP_NOT          = 14,
     OP_AND          = 15,
     OP_OR           = 16,
     OP_EQ           = 17,
@@ -88,25 +88,26 @@ struct Keyword_t
 
 const int MAX_VAR_SIZE      = 20;
 
-const int STD_OPERATORS_NUM = 17;
+const int STD_OPERATORS_NUM = 18;
 
 const Operator_t STD_OPERATORS[] = {
-                                    {"+",   OP_PLUS },
-                                    {"-",   OP_SUB  },
-                                    {"*",   OP_MUL  },
-                                    {"/",   OP_DIV  },
-                                    {"^",   OP_POW  },
-                                    {"in",  OP_IN   },
-                                    {"out", OP_OUT  },
-                                    {"=",   OP_EQ   },
-                                    {"==",  OP_IS_EQ},
-                                    {">",   OP_IS_B },
-                                    {"<",   OP_IS_S },
-                                    {">=",  OP_IS_BE},
-                                    {"<=",  OP_IS_SE},
-                                    {"!=",  OP_IS_NE},
-                                    {"and", OP_AND  },
-                                    {"or",  OP_OR   },
+                                    {"+",    OP_PLUS },
+                                    {"-",    OP_SUB  },
+                                    {"*",    OP_MUL  },
+                                    {"/",    OP_DIV  },
+                                    {"^",    OP_POW  },
+                                    {"in",   OP_IN   },
+                                    {"out",  OP_OUT  },
+                                    {"=",    OP_EQ   },
+                                    {"==",   OP_IS_EQ},
+                                    {">",    OP_IS_B },
+                                    {"<",    OP_IS_S },
+                                    {">=",   OP_IS_BE},
+                                    {"<=",   OP_IS_SE},
+                                    {"!=",   OP_IS_NE},
+                                    {"!",    OP_NOT},
+                                    {"and",  OP_AND  },
+                                    {"or",   OP_OR   },
                                     {"sqrt", OP_SQRT},
                                    };
 

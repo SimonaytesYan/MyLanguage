@@ -140,26 +140,14 @@ DEF_CMD(SQRT, 18, NO_ARGS,                                                  \
     PUSH(sqrt(a));                                                          \
 })
 
-DEF_CMD(INFROOTS, 19, NO_ARGS,                                              \
-{                                                                           \
-    printf("Inf roots\n");                                                  \
-    meow                                                                    \
-})
-
-DEF_CMD(NOROOTS, 20, NO_ARGS,                                               \
-{                                                                           \
-    printf("No roots\n");                                                   \
-    meow                                                                    \
-})
-
-DEF_CMD(IN, 21, NO_ARGS,                                                    \
+DEF_CMD(IN, 19, NO_ARGS,                                                    \
 {                                                                           \
     Elem val = 0;                                                           \
     scanf("%d", &val);                                                      \
     PUSH(val);                                                              \
 })
 
-DEF_CMD(DRAW, 22, NO_ARGS,                                                  \
+DEF_CMD(DRAW, 20, NO_ARGS,                                                  \
 {                                                                           \
     DrawRam(cpu);                                                           \
 })           
@@ -173,14 +161,29 @@ DEF_CMD(DRAW, 22, NO_ARGS,                                                  \
         PUSH(a2 op a1);                                                     \
     })
 
-LogicalOp(IS_EQ, 23, ==)
-LogicalOp(IS_NE, 24, !=)
-LogicalOp(IS_B,  25, >)
-LogicalOp(IS_BE, 26, >=)
-LogicalOp(IS_S,  27, <)
-LogicalOp(IS_SE, 28, <=)
-LogicalOp(AND,   29, &&)
-LogicalOp(OR,    30, ||)
+LogicalOp(IS_EQ, 21, ==)
+LogicalOp(IS_NE, 22, !=)
+LogicalOp(IS_B,  23, >)
+LogicalOp(IS_BE, 24, >=)
+LogicalOp(IS_S,  25, <)
+LogicalOp(IS_SE, 26, <=)
+LogicalOp(AND,   27, &&)
+LogicalOp(OR,    28, ||)
+
+DEF_CMD(POW, 29, NO_ARGS,
+{
+    Elem a1, a2 = 0;
+    POP(a1);
+    POP(a2);
+    PUSH(pow(a1, a2));
+})
+
+DEF_CMD(NOT, 30, NO_ARGS,
+{
+    Elem a1 = 0;
+    POP(a1);
+    PUSH(!a1);
+})
 
 #undef NO_ARGS
 #undef COMMON_ARGS

@@ -6,23 +6,28 @@
 static Node* last_comand = 0;
 
 //----------------------------
-//Grammar   ::= CreateVar* Function* Scope
-//Scope     ::= "begin" CreateVar* { Return | While | If | Equal | {Logical ';'}}+ "end"
-//Return    ::= "return" logical ';'
-//Function  ::= "function" Var '(' Var?{',' Var}* ')' Scope
-//While     ::= "while" Logical "do" Scope
-//If        ::= {"if" Logical "then"} Scope {"else" Scope}?
-//CreateVar ::= "var" Var ';'
-//Equal     ::= Var '=' Logical ';'
-//Logical   ::= PlusMinus {Logical_operator PlusMinus}?
-//PlusMinus ::= MulDiv{['+','-']MulDiv}*
-//MulDiv    ::= InOutCall{['*','/']InOutCall}*
-//InOutCall ::= "out" Logical | "in" Var | Call | Pow
-//Call      ::= "call" Var '(' Logical?{',' Logical}* ')'
-//Pow       ::= Brackets {"^" Pow}*
-//Brackets  ::= '('Logical')' | Var | Num
-//Var       ::= ['a'-'z','0'-'9','_']+
-//Number    ::= ['0'-'9']+
+/*!
+Grammar   ::= CreateVar* Function* Scope
+Scope     ::= "begin" CreateVar* { Return | While | If | Equal | {Logical ';'}}+ "end"
+Return    ::= "return" Logical ';'
+Function  ::= "function" Var '(' Var?{',' Var}* ')' Scope
+While     ::= "while" Logical "do" Scope
+If        ::= {"if" Logical "then"} Scope {"else" Scope}?
+CreateVar ::= "var" Var ';'
+Equal     ::= Var '=' Logical ';'
+
+Logical   ::= PlusMinus {Logical_operator PlusMinus}?
+PlusMinus ::= MulDiv{['+','-']MulDiv}*
+MulDiv    ::= InOutCall{['*','/']InOutCall}*
+InOutCall ::= "out" Logical | "in" Var | Call | Pow
+Call      ::= "call" Var '(' Logical?{',' Logical}* ')'
+Pow       ::= UnaryFunc {"^" Pow}*
+UnaryFunc ::= {"!" Brackets} | {"sqrt(" Brackets ")"} | Brackets
+Brackets  ::= '('Logical')' | Var | Num
+
+Var       ::= ['a'-'z','0'-'9','_']+
+Number    ::= ['0'-'9']+
+*/
 //----------------------------
 
 #define IterIp(ip, return_val)                                  \
@@ -54,6 +59,8 @@ static Node* GetMulDiv(Node** s);
 static Node* GetInOutCall(Node** s);
 
 static Node* GetPow(Node** s);
+
+static Node* GetUnaryFunc(Node** s); 
 
 static Node* GetBrackets(Node** s);
 
@@ -100,8 +107,8 @@ Node* GetNodeFromComands(Node* program)
 
     while((new_node = GetCreateVar(&program)) != nullptr)         //!Get vars
     {
-        R(val)  = NodeCtorFict();
-        RL(val) = new_node;
+        L(val) = new_node;
+        R(val) = NodeCtorFict();
         val = R(val);
     }
     val = start_node;
@@ -267,25 +274,21 @@ static Node* GetScope(Node** ip)
     CheckSyntaxError(TYPE(*ip) == TYPE_KEYWORD && VAL_KEYWORD(*ip) == KEYWORD_BEGIN, *ip, nullptr);
     (*ip)++;
 
-    Node* val     = nullptr;
-    Node* new_var = GetCreateVar(ip);
-    if (new_var != nullptr)
-    {
-        val = NodeCtorKeyword(KEYWORD_VAR);
-        L(val) = new_var;
-        while ((new_var = GetCreateVar(ip)) != nullptr)
-        {
-            Node* new_node  = NodeCtorFict();
-            L(new_node)     = val;
-            R(new_node)     = NodeCtorKeyword(KEYWORD_VAR);
-            RR(new_node)    = nullptr;
-            RL(new_node)    = new_var;
+    Node* val = NodeCtorFict();
 
-            val = new_node;
-        }
+    Node* all_vars = NodeCtorFict();                        //!Get vars
+    L(val) = all_vars;
+
+    Node* new_var  = nullptr;
+
+    while ((new_var = GetCreateVar(ip)) != nullptr)
+    {
+        L(all_vars) = new_var;
+        R(all_vars) = NodeCtorFict();
+        all_vars = R(all_vars);
     }
 
-    Node* new_node = NodeCtorFict();
+    Node* new_node = NodeCtorFict();                        //!Get code
     L(new_node) = val;
     val = new_node;
 
@@ -626,7 +629,7 @@ static Node* GetPow(Node** s)
                                        (*s)->val.number_cmd_in_text);
     #endif
 
-    Node* node = GetBrackets(s);
+    Node* node = GetUnaryFunc(s);
     if (node == nullptr) return nullptr;
 
     while (IS_OP(*s) && VAL_OP(*s) == OP_POW)
@@ -642,6 +645,55 @@ static Node* GetPow(Node** s)
     #endif
     
     return node;
+}
+
+static Node* GetUnaryFunc(Node** s)
+{
+    if (s == nullptr || *s == nullptr || *s >= last_comand)
+        return nullptr;
+    #ifdef DEBUG
+        printf("(UnaryFunc)\n");
+    #endif
+
+    Node* result = nullptr;
+
+    if (IS_OP(*s) && VAL_OP(*s) == OP_NOT)
+    {
+        result = NodeCtorOp(OP_NOT);
+        (*s)++;
+        R(result) = GetBrackets(s);
+        return result;
+    }
+
+    if (IS_OP(*s))
+    {    
+        switch (VAL_OP(*s))
+        {
+        case OP_SQRT:
+        {
+            result = NodeCtorOp(OP_SQRT);
+            (*s)++;
+            CheckSyntaxError(IS_SYMB(*s) && VAL_SYMB(*s) == '(', *s, nullptr);
+            (*s)++;
+
+            R(result) = GetBrackets(s);
+
+            CheckSyntaxError(IS_SYMB(*s) && VAL_SYMB(*s) == ')', *s, nullptr);
+            (*s)++;
+            break;
+        }
+        default:
+            break;
+        }
+        return result;
+    }
+    
+    if (result == nullptr)
+        return GetBrackets(s);
+
+    #ifdef DEBUG
+        printf("end UnaryFunc\n");
+    #endif
 }
 
 static Node* GetBrackets(Node** s)
@@ -737,6 +789,4 @@ static Node* GetNumber(Node** s)
         #endif
         return nullptr;
     }
-
-
 }

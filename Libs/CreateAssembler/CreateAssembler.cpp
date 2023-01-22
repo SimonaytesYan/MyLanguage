@@ -286,6 +286,9 @@ int PutOperator(Node* node, FILE* output_file)
 
     switch (VAL_OP(node))
     {
+        case OP_POW:
+            fprintf(output_file, "pow\n");
+            break;
         case OP_PLUS:
             fprintf(output_file, "add\n");
             break;
@@ -302,7 +305,7 @@ int PutOperator(Node* node, FILE* output_file)
             fprintf(output_file, "and\n");
             break;
         case OP_OR:
-            fprintf(output_file, "and\n");
+            fprintf(output_file, "or\n");
             break;
         case OP_IS_B:
             fprintf(output_file, "is_b\n");
@@ -322,6 +325,13 @@ int PutOperator(Node* node, FILE* output_file)
         case OP_IS_SE:
             fprintf(output_file, "is_se\n");
             break;
+        case OP_NOT:
+            fprintf(output_file, "not\n");
+            break;
+        case OP_SQRT:
+            fprintf(output_file, "sqrt\n");
+            break;
+
         case OP_OUT:
         {
             PutNodeInFile(R(node), output_file);
@@ -459,6 +469,7 @@ int PutFunction(Node* node, FILE* output_file)
 
 int PutKeyword(Node* node, FILE* output_file)
 {
+    CheckSyntaxError(node != nullptr, node, -1);
     switch (VAL_KEYWORD(node))
     {
         case KEYWORD_VAR:
@@ -466,7 +477,9 @@ int PutKeyword(Node* node, FILE* output_file)
             #ifdef DEBUG
                 printf("var\n");
             #endif
-            CheckSyntaxError(R(node) != nullptr && IS_VAR(R(node)), R(node), -1);
+            
+            CheckSyntaxError(R(node) != nullptr, R(node), -1);
+            CheckSyntaxError(IS_VAR(R(node)), R(node), -1);
             printf("add var <%s>\n", VAL_VAR(R(node)));
             ReturnIfError(AddVar(VAL_VAR(R(node))));
             return 0;
@@ -511,7 +524,7 @@ int  PutCall(Node* node, FILE* output_file)
     fprintf(output_file, "push rdx\n");
     fprintf(output_file, "push %d\n", offset_change);
     fprintf(output_file, "add\n");
-    fprintf(output_file, "pop rdx\n");   
+    fprintf(output_file, "pop rdx\n");
 
     fprintf(output_file, "call label%d\n", GetFuncIndex(VAL_FUNC(node)));
 
