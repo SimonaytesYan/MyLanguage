@@ -121,7 +121,7 @@ int ListBegin(List* list, int *index)
 {
     ReturnIfError(ListCheck(list));
 
-    if (list->capacity >= 1)
+    if (list->capacity >= 1 && list->size != 0)
         *index = list->data[0].next;
     else
         *index = -1;

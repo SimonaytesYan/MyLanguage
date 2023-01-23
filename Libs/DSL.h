@@ -137,6 +137,10 @@ const double PRECISION = 1e-6;
 
 #define IS_L_OP(node) (L(node) != nullptr && IS_OP(L(node)))
 
+#define IS_L_VAR(node) (L(node) != nullptr && IS_VAR(L(node)))
+
+#define IS_R_VAR(node) (R(node) != nullptr && IS_VAR(R(node)))
+
 #define IS_L_NUM(node) (L(node) != nullptr && IS_NUM(L(node)))
 
 #define IS_R_NUM(node) (R(node) != nullptr && IS_NUM(R(node)))
@@ -166,6 +170,8 @@ const double PRECISION = 1e-6;
 #define IS_SYMB(node) (TYPE(node) == TYPE_SYMB)
 
 #define IS_KEYWORD(node) (TYPE(node) == TYPE_KEYWORD)
+
+#define IS_FUNC(node) (TYPE(node) == TYPE_FUNCTION)
 
 #define IS_LOGICAL_OP(node) (IS_OP(node) && (VAL_OP(node) == OP_AND   || VAL_OP(node) == OP_IS_B  ||\
                                              VAL_OP(node) == OP_IS_BE || VAL_OP(node) == OP_IS_EQ ||\

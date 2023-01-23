@@ -64,17 +64,17 @@ struct Keyword_and_stundart_t
     int           stundart_number;
 };
 
-Keyword_and_stundart_t KEYWORD_TO_STANDART[] = {{KEYWORD_VAR,       7},
-                                                {KEYWORD_IF,        3},
-                                                {KEYWORD_THEN,      -1},
-                                                {KEYWORD_ELSE,      4},
-                                                {KEYWORD_BEGIN,     -1},
-                                                {KEYWORD_END,       -1},
-                                                {KEYWORD_WHILE,     5},
-                                                {KEYWORD_DO,        -1},
-                                                {KEYWORD_FUNCTION,  8},
-                                                {KEYWORD_RETURN,    10},
-                                                {KEYWORD_CALL,      9}};
+const Keyword_and_stundart_t KEYWORD_TO_STANDART[] = {{KEYWORD_VAR,       7},
+                                                      {KEYWORD_IF,        3},
+                                                      {KEYWORD_THEN,      -1},
+                                                      {KEYWORD_ELSE,      4},
+                                                      {KEYWORD_BEGIN,     -1},
+                                                      {KEYWORD_END,       -1},
+                                                      {KEYWORD_WHILE,     5},
+                                                      {KEYWORD_DO,        -1},
+                                                      {KEYWORD_FUNCTION,  8},
+                                                      {KEYWORD_RETURN,    10},
+                                                      {KEYWORD_CALL,      9}};
 
 struct Node_t 
 {

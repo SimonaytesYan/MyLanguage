@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "Libs/Setup.h"
+#include "Libs/SaveAndGetTree/SaveAndGetTree.h"
 #include "Libs/LexicalAnalysis/LexicalAnalysis.h"
 #include "Libs/ResursiveDescent/RecursiveDescent.h"
 #include "Libs/CreateAssembler/CreateAssembler.h"
@@ -25,9 +26,11 @@ int main()
     Tree lang_tree = {};
     TreeCtor(&lang_tree);
 
-    MakeTreeFromComands(&lang_tree, program.comands, program.comands_num);
+    ReturnIfError(MakeTreeFromComands(&lang_tree, program.comands, program.comands_num));
 
     GraphicDump(&lang_tree);
+
+    SaveTreeInFile(&lang_tree, "Tree.alt");
 
     ReturnIfError(CreateAsmFromTree(&lang_tree, ASM_FILE_NAME));
 
