@@ -462,38 +462,30 @@ static Node* GetEqual(Node** ip)
 
 static Node* GetLogical(Node** ip)
 {
+    if (ip == nullptr || *ip >= last_comand || *ip == nullptr) 
+        return nullptr;
     #ifdef DEBUG
         printf("(Logical)\n");
     #endif
-
-    if (ip == nullptr || *ip >= last_comand || *ip == nullptr) 
-        return nullptr;
 
     Node* val = nullptr;
 
     val = GetPlusMinus(ip);
     if (val == nullptr) return nullptr;
-
-    if (*ip < last_comand && IS_LOGICAL_OP(*ip))
+    
+    while (*ip < last_comand && IS_LOGICAL_OP(*ip))
     {
-        Node* new_node = NodeCtorOp(VAL_OP(*ip));
-        L(new_node) = val;
+        Node* op_node = NodeCtorOp(VAL_OP(*ip));
         (*ip)++;
-        R(new_node) = GetPlusMinus(ip);
-        if (R(new_node) == nullptr)
-        {
-            #ifdef DEBUG
-                printf("(end logical)\n");
-            #endif
-            return nullptr;
-        }
-            
-        #ifdef DEBUG
-            printf("(end logical)\n");
-        #endif
-        return new_node;
-    }
 
+        Node* right_node = GetPlusMinus(ip);
+        if (right_node == nullptr) return nullptr;
+        
+        L(op_node) = val;
+        R(op_node) = right_node;
+
+        val = op_node;
+    }
     
     #ifdef DEBUG
         printf("(end logical)\n");

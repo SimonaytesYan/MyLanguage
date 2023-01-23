@@ -98,7 +98,6 @@ const Operator_t STD_OPERATORS[] = {
                                     {"^",    OP_POW  },
                                     {"in",   OP_IN   },
                                     {"out",  OP_OUT  },
-                                    {"=",    OP_EQ   },
                                     {"==",   OP_IS_EQ},
                                     {">",    OP_IS_B },
                                     {"<",    OP_IS_S },
@@ -108,6 +107,7 @@ const Operator_t STD_OPERATORS[] = {
                                     {"!",    OP_NOT},
                                     {"and",  OP_AND  },
                                     {"or",   OP_OR   },
+                                    {"=",    OP_EQ   },
                                     {"sqrt", OP_SQRT},
                                    };
 

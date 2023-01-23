@@ -37,10 +37,18 @@ static bool GetOperator(const char* buffer, size_t *ind, const size_t ip, Node* 
     bool operator_found = false;
     for(int k = 0; k < STD_OPERATORS_NUM; k++)
     {
+        #ifdef DEBUG
+            printf("<%s> %d\n", STD_OPERATORS[k].name, STD_OPERATORS[k].code);
+        #endif
+
         size_t lenght = strlen(STD_OPERATORS[k].name);
 
         if (!strncmp(buffer + *ind, STD_OPERATORS[k].name, lenght))
         {
+            if (STD_OPERATORS[k].code == OP_IS_EQ)
+            {
+                printf("=======\n");
+            }
             #ifdef DEBUG
                 fprintf(stderr, "OPERATOR\n");
             #endif
