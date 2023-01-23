@@ -9,14 +9,14 @@ enum NODE_TYPES
 {
     UNDEF_NODE_TYPE = -1,
     TYPE_FICT       = 0,
-    TYPE_VAR        = 1,
-    TYPE_OP         = 2,
-    TYPE_NUM        = 3,
-    TYPE_SYMB       = 4,
-    TYPE_KEYWORD    = 5,
-    TYPE_FUNCTION   = 8,
-    TYPE_RETURN     = 9,
-    TYPE_CALL       = 10,
+    TYPE_NUM        = 1,        //!standart number
+    TYPE_VAR        = 2,        //!standart number
+    TYPE_SYMB       = 3,
+    TYPE_KEYWORD    = 4,
+    TYPE_OP         = 6,        //!standart number
+    TYPE_FUNCTION   = 8,        //!standart number
+    TYPE_RETURN     = 9,        //!standart number
+    TYPE_CALL       = 10,       //!standart number
 };
 
 enum KEYWORD_TYPES
@@ -57,6 +57,24 @@ enum OPER_TYPES
     OP_EQ           = 17,
     OP_SQRT         = 18,
 };
+
+struct Keyword_and_stundart_t
+{
+    KEYWORD_TYPES keyword;
+    int           stundart_number;
+};
+
+Keyword_and_stundart_t KEYWORD_TO_STANDART[] = {{KEYWORD_VAR,       7},
+                                                {KEYWORD_IF,        3},
+                                                {KEYWORD_THEN,      -1},
+                                                {KEYWORD_ELSE,      4},
+                                                {KEYWORD_BEGIN,     -1},
+                                                {KEYWORD_END,       -1},
+                                                {KEYWORD_WHILE,     5},
+                                                {KEYWORD_DO,        -1},
+                                                {KEYWORD_FUNCTION,  8},
+                                                {KEYWORD_RETURN,    10},
+                                                {KEYWORD_CALL,      9}};
 
 struct Node_t 
 {
