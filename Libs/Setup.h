@@ -15,8 +15,8 @@ enum NODE_TYPES
     TYPE_KEYWORD    = 4,
     TYPE_OP         = 6,        //!standart number
     TYPE_FUNCTION   = 8,        //!standart number
-    TYPE_RETURN     = 9,        //!standart number
-    TYPE_CALL       = 10,       //!standart number
+    TYPE_CALL       = 9,       //!standart number
+    TYPE_RETURN     = 10,        //!standart number
 };
 
 enum KEYWORD_TYPES

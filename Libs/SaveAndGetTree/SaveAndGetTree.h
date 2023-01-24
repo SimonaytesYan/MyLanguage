@@ -5,4 +5,6 @@
 
 int SaveTreeInFile(const Tree* tree, const char* path);
 
+int GetTreeFromFile(Tree* tree, const char* path);
+
 #endif //__SYM_SAVE_GET_ALT__

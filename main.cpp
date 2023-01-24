@@ -13,30 +13,58 @@ static void Program_tDtor(Program_t program);
 
 static void GraphicDumpComands(Program_t program);
 
+const int  COMPILE_PROGRAM = 0;
+const int  COMPILE_TREE    = 1;
+const char TREE_PATH[]     = "Tree.alt";
+
 int main()
 {
     printf("Start main\n");
+    printf("Enter %d to compile  program\n",       COMPILE_PROGRAM);
+    printf("Enter %d to compile tree from file\n", COMPILE_TREE);
+    
+    int operation_mode = 0;
+    scanf("%d", &operation_mode);
+
     OpenLogFile("Make_tree_log.log");
 
-    Program_t program = {};
-    program.comands = GetProgramFromFile(PROGRAM_FILE_NAME, &program.comands_num);
+    if (operation_mode == COMPILE_PROGRAM)
+    {
+        Program_t program = {};
+        program.comands = GetProgramFromFile(PROGRAM_FILE_NAME, &program.comands_num);
 
-    GraphicDumpComands(program);
+        GraphicDumpComands(program);
 
-    Tree lang_tree = {};
-    TreeCtor(&lang_tree);
+        Tree lang_tree = {};
+        TreeCtor(&lang_tree);
 
-    ReturnIfError(MakeTreeFromComands(&lang_tree, program.comands, program.comands_num));
+        ReturnIfError(MakeTreeFromComands(&lang_tree, program.comands, program.comands_num));
 
-    GraphicDump(&lang_tree);
+        GraphicDump(&lang_tree);
 
-    SaveTreeInFile(&lang_tree, "Tree.alt");
+        SaveTreeInFile(&lang_tree, TREE_PATH);
 
-    ReturnIfError(CreateAsmFromTree(&lang_tree, ASM_FILE_NAME));
+        ReturnIfError(CreateAsmFromTree(&lang_tree, ASM_FILE_NAME));
 
-    DeleteNode(lang_tree.root);
+        DeleteNode(lang_tree.root);
 
-    Program_tDtor(program);
+        Program_tDtor(program);
+    }
+    else
+    {
+        Tree lang_tree = {};
+        TreeCtor(&lang_tree);
+
+        ReturnIfError(GetTreeFromFile(&lang_tree, TREE_PATH));
+
+        GraphicDump(&lang_tree);
+
+        ReturnIfError(CreateAsmFromTree(&lang_tree, ASM_FILE_NAME));
+
+        DeleteNode(lang_tree.root);
+    }
+
+    CloseLogFile();
     printf("End main\n");
 }
 

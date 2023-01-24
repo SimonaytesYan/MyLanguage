@@ -191,8 +191,8 @@ static void WriteNodeAndEdge(Node* node, void* fp_void)
     const char light_green[]  = "#B1FF9F";
     const char light_red[]    = "#FF4646";
     const char light_blue[]   = "#87A7FF";
-    const char light_grey[]   = "#A6A1A1";
-    const char light_yellow[] = "#B1FF9F";
+    const char light_grey[]   = "#C8C8C8";
+    const char light_yellow[] = "#FFDC4B";
 
     const char node_format[] = "Node%06X[style = \"filled,rounded\", fillcolor = \"%s\", label = \"{{ <v>";
     
@@ -225,7 +225,7 @@ static void WriteNodeAndEdge(Node* node, void* fp_void)
         }
         case TYPE_KEYWORD:
         {
-            fprintf(fp, node_format, node, light_yellow, node);
+            fprintf(fp, node_format, node, light_green, node);
             if (VAL_KEYWORD(node) == 0)
                 fprintf(fp, "KEYWORD | %d ", 0);
             else
