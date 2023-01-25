@@ -470,7 +470,7 @@ int PutFunction(Node* node, FILE* output_file)
 int PutKeyword(Node* node, FILE* output_file)
 {
     CheckSyntaxError(node != nullptr, node, -1);
-    switch (VAL_KEYWORD(node))
+    switch (VAL_KW(node))
     {
         case KEYWORD_VAR:
         {

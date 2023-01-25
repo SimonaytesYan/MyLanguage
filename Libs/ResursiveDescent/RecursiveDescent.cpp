@@ -138,7 +138,7 @@ static Node* GetReturn(Node** ip)
 
     Node* val = nullptr;
 
-    if (IS_KEYWORD(*ip) && VAL_KEYWORD(*ip) == KEYWORD_RETURN)
+    if (IS_KW(*ip) && VAL_KW(*ip) == KEYWORD_RETURN)
     {
         val = NodeCtorReturn();
         (*ip)++;
@@ -164,7 +164,7 @@ static Node* GetCall(Node** ip)
 
     Node* val = nullptr;
 
-    if (IS_KEYWORD(*ip) && VAL_KEYWORD(*ip) == KEYWORD_CALL)
+    if (IS_KW(*ip) && VAL_KW(*ip) == KEYWORD_CALL)
     {
         (*ip)++;
         CheckSyntaxError(IS_VAR(*ip), *ip, nullptr);                        
@@ -216,7 +216,7 @@ static Node* GetFunction(Node** ip)
     #endif
 
     Node* val = nullptr;
-    if(IS_KEYWORD(*ip) && VAL_KEYWORD(*ip) == KEYWORD_FUNCTION)
+    if(IS_KW(*ip) && VAL_KW(*ip) == KEYWORD_FUNCTION)
     {
         (*ip)++;
         CheckSyntaxError(TYPE(*ip) == TYPE_VAR, *ip, nullptr);
@@ -271,7 +271,7 @@ static Node* GetScope(Node** ip)
     if (ip == nullptr || *ip == nullptr || *ip >= last_comand)
         return nullptr;
 
-    CheckSyntaxError(TYPE(*ip) == TYPE_KEYWORD && VAL_KEYWORD(*ip) == KEYWORD_BEGIN, *ip, nullptr);
+    CheckSyntaxError(TYPE(*ip) == TYPE_KEYWORD && VAL_KW(*ip) == KEYWORD_BEGIN, *ip, nullptr);
     (*ip)++;
 
     Node* val = NodeCtorFict();
@@ -294,7 +294,7 @@ static Node* GetScope(Node** ip)
 
     while (true)
     {
-        if (IS_KEYWORD(*ip) && VAL_KEYWORD(*ip) == KEYWORD_END)
+        if (IS_KW(*ip) && VAL_KW(*ip) == KEYWORD_END)
             break;
         new_node = GetReturn(ip);
         if (new_node == nullptr)
@@ -324,7 +324,7 @@ static Node* GetScope(Node** ip)
         R(new_node) = nullptr;
         val = new_node;
         
-        if(TYPE(*ip) == TYPE_KEYWORD && VAL_KEYWORD(*ip) == KEYWORD_END)
+        if(TYPE(*ip) == TYPE_KEYWORD && VAL_KW(*ip) == KEYWORD_END)
         {
             (*ip)++;
             #ifdef DEBUG
@@ -348,12 +348,12 @@ static Node* GetWhile(Node** ip)
     #endif
 
     Node* val = nullptr;
-    if (IS_KEYWORD(*ip) && VAL_KEYWORD(*ip) == KEYWORD_WHILE)
+    if (IS_KW(*ip) && VAL_KW(*ip) == KEYWORD_WHILE)
     {
         val = NodeCtorKeyword(KEYWORD_WHILE);
         (*ip)++;
         L(val) = GetLogical(ip);
-        CheckSyntaxError(IS_KEYWORD(*ip) && VAL_KEYWORD(*ip) == KEYWORD_DO, *ip, nullptr);
+        CheckSyntaxError(IS_KW(*ip) && VAL_KW(*ip) == KEYWORD_DO, *ip, nullptr);
         (*ip)++;
         R(val) = GetScope(ip);
     }
@@ -373,18 +373,18 @@ static Node* GetIf(Node** ip)
         return nullptr;
 
     Node* val = nullptr;
-    if (IS_KEYWORD(*ip) && VAL_KEYWORD(*ip) == KEYWORD_IF)
+    if (IS_KW(*ip) && VAL_KW(*ip) == KEYWORD_IF)
     {
         val    = NodeCtorKeyword(KEYWORD_IF); 
         (*ip)++;
         L(val) = GetLogical(ip);     //!condition
-        CheckSyntaxError(IS_KEYWORD(*ip) && (VAL_KEYWORD(*ip) == KEYWORD_THEN), *ip, nullptr);
+        CheckSyntaxError(IS_KW(*ip) && (VAL_KW(*ip) == KEYWORD_THEN), *ip, nullptr);
         (*ip)++;
 
         R(val)  = NodeCtorFict();
         RL(val) = GetScope(ip);                                                         //!true branch
 
-        if((*ip) < last_comand && IS_KEYWORD(*ip) && VAL_KEYWORD(*ip) == KEYWORD_ELSE)     //!else branch
+        if((*ip) < last_comand && IS_KW(*ip) && VAL_KW(*ip) == KEYWORD_ELSE)     //!else branch
         {
             (*ip)++;
             RR(val) = GetScope(ip);
@@ -408,7 +408,7 @@ static Node* GetCreateVar(Node** ip)
 
     if (TYPE(*ip) == TYPE_KEYWORD)
     {
-        switch (VAL_KEYWORD(*ip))
+        switch (VAL_KW(*ip))
         {
             case KEYWORD_VAR:
             {
@@ -591,7 +591,7 @@ static Node* GetInOutCall(Node** ip)
         #endif
         return new_node;
     }
-    else if (IS_KEYWORD(*ip) && VAL_KEYWORD(*ip) == KEYWORD_CALL)
+    else if (IS_KW(*ip) && VAL_KW(*ip) == KEYWORD_CALL)
     {
         new_node = GetCall(ip);
         #ifdef DEBUG

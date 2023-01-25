@@ -208,7 +208,7 @@ int SaveNodeInFile(const Node* node, FILE* fp)
     switch (TYPE(node))
     {
         case TYPE_KEYWORD:
-            fprintf(fp, " %d 0", KEYWORD_TO_STANDART[VAL_KEYWORD(node) - 1].stundart_number);
+            fprintf(fp, " %d 0", KEYWORD_TO_STANDART[VAL_KW(node) - 1].stundart_number);
             break;
         case TYPE_VAR:
             fprintf(fp, " %d %d", TYPE_VAR, FindVar(VAL_VAR(node)));

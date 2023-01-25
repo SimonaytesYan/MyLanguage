@@ -135,6 +135,10 @@ const double PRECISION = 1e-6;
 #define RR(node) (node)->right->right
 
 
+#define IS_L_CALL(node) (L(node) != nullptr && TYPE(L(node)) == TYPE_CALL)
+
+#define IS_R_CALL(node) (R(node) != nullptr && TYPE(R(node)) == TYPE_CALL)
+
 #define IS_L_OP(node) (L(node) != nullptr && IS_OP(L(node)))
 
 #define IS_L_VAR(node) (L(node) != nullptr && IS_VAR(L(node)))
@@ -150,6 +154,7 @@ const double PRECISION = 1e-6;
 #define IS_VAR(node) ((node)->val.type == TYPE_VAR)
 
 #define IS_OP(node) ((node)->val.type == TYPE_OP)
+
 
 #define IS_NUM(node) ((node)->val.type == TYPE_NUM)
 
@@ -169,7 +174,7 @@ const double PRECISION = 1e-6;
 
 #define IS_SYMB(node) (TYPE(node) == TYPE_SYMB)
 
-#define IS_KEYWORD(node) (TYPE(node) == TYPE_KEYWORD)
+#define IS_KW(node) (TYPE(node) == TYPE_KEYWORD)
 
 #define IS_FUNC(node) (TYPE(node) == TYPE_FUNCTION)
 
@@ -186,9 +191,13 @@ const double PRECISION = 1e-6;
 
 #define VAL_SYMB(node) (node)->val.val.symb
 
-#define VAL_KEYWORD(node) (node)->val.val.keyword
+#define VAL_KW(node) (node)->val.val.keyword
 
 #define VAL_FUNC(node) (node)->val.val.function
+
+#define IS_FICT(node) (TYPE(node) == TYPE_FICT)
+
+#define IS_VAR_KEYWORD(node) (IS_KW(node) && VAL_KW(node) == KEYWORD_VAR)
 
 #define TYPE(node) (node)->val.type
 
