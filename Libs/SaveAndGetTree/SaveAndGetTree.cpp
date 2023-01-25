@@ -12,7 +12,6 @@ Stack VARS = {};
 Stack FUNC = {};
 
 int   GetVarsFromTree(Node* node);
-char* GetFuncArgs(Node* node, int* number_var);
 int   PutVars(Node* root, FILE* fp);
 int   PutFunctions(Node* root, FILE* fp);
 int   GetFuncFromTree(Node* node);
@@ -34,9 +33,6 @@ int SaveTreeInFile(const Tree* tree, const char* path)
     fprintf(fp, "{ ");
     ReturnIfError(SaveNodeInFile(tree->root, fp));
     fprintf(fp, "\n}");
-
-    for(int i = 0; i < FUNC.size; i++)
-        free(FUNC.data[i]);
 
     StackDtor(&VARS);
     StackDtor(&FUNC);
@@ -95,81 +91,12 @@ int GetVarsFromTree(Node* node)
     return 0;
 }
 
-char* GetFuncArgs(Node* node, int* number_var)
-{
-    if (node == nullptr)
-        return nullptr;
-    if (TYPE(node) == TYPE_FICT)
-    {
-        char* left  = nullptr;
-        char* right = nullptr;
-
-        left  = GetFuncArgs(L(node), number_var);
-        right = GetFuncArgs(R(node), number_var);
-
-        
-        int leftLen  = 0;
-        if (left != nullptr) leftLen = strlen(left);
-
-        int rightLen = 0;
-        if (right != nullptr) rightLen = strlen(right);
-        
-        char* result = (char*)calloc(leftLen + rightLen + 2, sizeof(char));
-
-        if (left != nullptr) strcpy(result, left);
-
-        result[leftLen] = ' ';
-        
-        if (right != nullptr) strcpy(result + leftLen + 1, right);
-        
-        free(left);
-        free(right);
-
-        return result;
-    }
-    else
-    {
-        (*number_var)++;
-        char* result = (char*)calloc(strlen(VAL_VAR(node)) + 1, sizeof(char));
-        strcpy(result, VAL_VAR(node));
-        return result;
-    }
-}
-
 int GetFuncFromTree(Node* node)
 {
     if (node == nullptr) return 0;
 
     if (IS_FUNC(node))
-    {
-        int number_vars = 0;
-        char* arguments = GetFuncArgs(L(node), &number_vars);
-
-        int  func_name_len      = strlen(VAL_FUNC(node));
-        char number_vars_str[MAX_NUMBER_LENGHT + 1] = "";
-
-        for(int i = 0; i < MAX_NUMBER_LENGHT; i++)
-        {
-            number_vars_str[i] = ' ';
-            if (number_vars > 0)
-            {
-                number_vars_str[i] = '0' + number_vars % 10;
-                number_vars /= 10;
-            }
-        }
-        
-        char* result = (char*)calloc(func_name_len + strlen(arguments) + strlen(number_vars_str) + 1, sizeof(char));
-
-        strcpy(result, VAL_FUNC(node));
-        result[func_name_len] = ' ';
-
-        strcpy(result + func_name_len + 1, number_vars_str);
-
-        strcpy(result + func_name_len + strlen(number_vars_str), arguments);
-        
-        free(arguments);
-        ReturnIfError(StackPush(&FUNC, result));
-    }
+        ReturnIfError(StackPush(&FUNC, VAL_FUNC(node)));
 
     ReturnIfError(GetFuncFromTree(L(node)));
     ReturnIfError(GetFuncFromTree(R(node)));
@@ -232,41 +159,103 @@ int SaveNodeInFile(const Node* node, FILE* fp)
             fprintf(fp, " %d 0", TYPE(node));
     }
 
-    fprintf(fp, " {\n");
-    ReturnIfError(SaveNodeInFile(L(node), fp));
-    fprintf(fp, "\n}\n{\n");
-    ReturnIfError(SaveNodeInFile(R(node), fp));
-    fprintf(fp, "}");
+    if (L(node) != nullptr)
+    {
+        fprintf(fp, " {\n");
+        ReturnIfError(SaveNodeInFile(L(node), fp));
+        fprintf(fp, "\n}\n");
+    }
+    if (R(node) != nullptr)
+    {
+        fprintf(fp, "{\n");
+        ReturnIfError(SaveNodeInFile(R(node), fp));
+        fprintf(fp, "\n}\n");
+    }
 
     return 0;
 }
 
-Node* RecognizeNode(int node_type_std, int node_value)
+
+Node* GetNodeFromFile(FILE* fp);
+
+Node* RecognizeNode(int node_type_std, int node_value, FILE* fp)
 {
     switch (node_type_std)
     {
-        case 0:
-            return NodeCtorFict();
-        case 1:
+        case 0:                                                 //!FICT
+        {
+            Node* result = NodeCtorFict();
+            L(result) = GetNodeFromFile(fp);
+            R(result) = GetNodeFromFile(fp);
+            return result;
+        }
+        case 1:                                                 //!NUMBER
             return NodeCtorNum(node_value);
-        case 2:
+        case 2:                                                 //!VAR
             return NodeCtorVar(VARS.data[node_value]);
-        case 3:
-            return NodeCtorKeyword(KEYWORD_IF);
-        case 4:
-            return NodeCtorKeyword(KEYWORD_ELSE);
-        case 5:
-            return NodeCtorKeyword(KEYWORD_WHILE);
-        case 6:
-            return NodeCtorOp((OPER_TYPES)node_value);
-        case 7:
-            return NodeCtorKeyword(KEYWORD_VAR);
-        case 8:
-            return NodeCtorFunction(FUNC.data[node_value]);
-        case 9:
-            return NodeCtorCall(FUNC.data[node_value]);
-        case 10:
-            return NodeCtorReturn();
+        case 3:                                                 //!IF
+        {
+            Node* result = NodeCtorKeyword(KEYWORD_IF);
+            L(result) = GetNodeFromFile(fp);
+            R(result) = GetNodeFromFile(fp);
+            return result;
+        }
+        case 4:                                                 //!ELSE
+        {
+            Node* result = NodeCtorKeyword(KEYWORD_ELSE);
+            L(result) = GetNodeFromFile(fp);
+            R(result) = GetNodeFromFile(fp);
+            return result;
+        }
+        case 5:                                                 //!WHILE
+        {
+            Node* result = NodeCtorKeyword(KEYWORD_WHILE);
+            L(result) = GetNodeFromFile(fp);
+            R(result) = GetNodeFromFile(fp);
+            return result;
+        }
+        case 6:                                                 //!OPERATOR
+        {
+            Node* result = NodeCtorOp((OPER_TYPES)node_value);
+
+            if (node_value == OP_SQRT || node_value == OP_NOT || 
+                node_value == OP_IN || node_value == OP_OUT)
+            {
+                R(result) = GetNodeFromFile(fp);
+            }
+            else
+            {
+                L(result) = GetNodeFromFile(fp);
+                R(result) = GetNodeFromFile(fp);
+            }
+
+            return result;
+        }
+        case 7:                                                 //!VAR
+        {                                                   
+            Node* result = NodeCtorKeyword(KEYWORD_VAR);
+            R(result) = GetNodeFromFile(fp);
+            return result;
+        }
+        case 8:                                                 //!DEF FUNCTION
+        {
+            Node* result = NodeCtorFunction(FUNC.data[node_value]);
+            L(result) = GetNodeFromFile(fp);
+            R(result) = GetNodeFromFile(fp);
+            return result;
+        }
+        case 9:                                                 //!CALL
+        {
+            Node* result = NodeCtorCall(FUNC.data[node_value]);
+            R(result) = GetNodeFromFile(fp);
+            return result;
+        }
+        case 10:                                                //!RETURN
+        {
+            Node* result = NodeCtorReturn();
+            R(result) = GetNodeFromFile(fp);
+            return result;
+        }
         
         default:
             return nullptr;
@@ -277,24 +266,17 @@ Node* GetNodeFromFile(FILE* fp)
 {
     char c = 0;
     fscanf(fp, " %c", &c);                          //! get '{'
-    
-    fscanf(fp, " %c", &c);                          //! if node is only { } then node is null 
     if (c == '}')
+    {
+        ungetc(c, fp);
         return nullptr;
-
-    ungetc(c, fp);
+    }
 
     int node_type_std = 0;
     int node_value    = 0;
-    fscanf(fp, "%d %d", &node_type_std, &node_value); //!
+    fscanf(fp, "%d %d", &node_type_std, &node_value);
 
-    Node* result = RecognizeNode(node_type_std, node_value);
-
-    if (result == nullptr)
-        return nullptr;
-
-    L(result) = GetNodeFromFile(fp);
-    R(result) = GetNodeFromFile(fp);
+    Node* result = RecognizeNode(node_type_std, node_value, fp);
 
     fscanf(fp, " %c", &c);                          //! get '}'
 
@@ -338,14 +320,10 @@ int GetTreeFromFile(Tree* tree, const char* path)
         
         FUNC.data[i] = (char*)calloc(strlen(func) + 1, sizeof(char));
         strcpy(FUNC.data[i], func);
-
-        int n_args = 0;
-        fscanf(fp, "%d", &n_args);
-        for(int j = 0; j < n_args; j++)
-        {
-            char var[MAX_VAR_NAME_LEN] = "";
-            fscanf(fp, "%s", var);
-        }
+        
+        #ifdef DEBUG
+            printf("%s\n", FUNC.data[i]);
+        #endif
     }
 
     tree->root = GetNodeFromFile(fp);

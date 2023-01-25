@@ -15,7 +15,7 @@
 
 static const char COMAND_PROTOTYPE[] = "dot GraphicDumps/dump%d -o GraphicDumps/Dump%d.png -T png";
 static       int  GRAPHIC_DUMP_CNT   = 0;
-static const int  MAX_VAR_NAME_LEN   = 10; 
+static const int  MAX_VAR_NAME_LEN   = 20; 
 
 typedef struct Node 
 {

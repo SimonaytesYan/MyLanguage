@@ -381,10 +381,10 @@ static Node* GetIf(Node** ip)
         CheckSyntaxError(IS_KW(*ip) && (VAL_KW(*ip) == KEYWORD_THEN), *ip, nullptr);
         (*ip)++;
 
-        R(val)  = NodeCtorFict();
+        R(val)  = NodeCtorKeyword(KEYWORD_ELSE);
         RL(val) = GetScope(ip);                                                         //!true branch
 
-        if((*ip) < last_comand && IS_KW(*ip) && VAL_KW(*ip) == KEYWORD_ELSE)     //!else branch
+        if((*ip) < last_comand && IS_KW(*ip) && VAL_KW(*ip) == KEYWORD_ELSE)            //!else branch
         {
             (*ip)++;
             RR(val) = GetScope(ip);

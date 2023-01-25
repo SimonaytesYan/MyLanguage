@@ -42,7 +42,7 @@ enum OPER_TYPES
     OP_SUB          = 2,
     OP_MUL          = 3,
     OP_DIV          = 4,
-    OP_POW          = 5,
+    OP_SQRT         = 5,
     OP_IN           = 6,
     OP_OUT          = 7,
     OP_IS_EQ        = 8,
@@ -55,7 +55,7 @@ enum OPER_TYPES
     OP_AND          = 15,
     OP_OR           = 16,
     OP_EQ           = 17,
-    OP_SQRT         = 18,
+    OP_POW          = 18,
 };
 
 struct Keyword_and_stundart_t
@@ -113,7 +113,7 @@ const Operator_t STD_OPERATORS[] = {
                                     {"-",    OP_SUB  },
                                     {"*",    OP_MUL  },
                                     {"/",    OP_DIV  },
-                                    {"^",    OP_POW  },
+                                    {"sqrt", OP_SQRT},
                                     {"in",   OP_IN   },
                                     {"out",  OP_OUT  },
                                     {"==",   OP_IS_EQ},
@@ -126,7 +126,7 @@ const Operator_t STD_OPERATORS[] = {
                                     {"and",  OP_AND  },
                                     {"or",   OP_OR   },
                                     {"=",    OP_EQ   },
-                                    {"sqrt", OP_SQRT},
+                                    {"^",    OP_POW  },
                                    };
 
 const int KEYWORDS_NUM = 11;
