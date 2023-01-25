@@ -3,13 +3,16 @@ C_FLAGS   = -D _DEBUG -ggdb3 -std=c++2a -O0 -Wall -Wextra -Weffc++ -Waggressive-
 #windows:
 #C_FLAGS = -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Weffc++ -Wmain -Wextra -Wall -g -pipe -fexceptions -Wcast-qual -Wconversion -Wctor-dtor-privacy -Wempty-body -Wformat-security -Wformat=2 -Wignored-qualifiers -Wlogical-op -Wno-missing-field-initializers -Wnon-virtual-dtor -Woverloaded-virtual -Wpointer-arith -Wsign-promo -Wstack-usage=8192 -Wstrict-aliasing -Wstrict-null-sentinel -Wtype-limits -Wwrite-strings -Werror=vla -D_DEBUG -D_EJUDGE_CLIENT_SIDE
 
-all: logging recursive_descent in_and_out lexical_analis back_end save_get_tree
-	g++ main.cpp Obj/LexicalAnalysis.o Obj/Logging.o Obj/RecursiveDescent.o Obj/InAndOut.o Obj/Backend.o Obj/SaveAndGetTree.o $(C_FLAGS) -o Exe/Start.exe
+all: logging recursive_descent in_and_out lexical_analis back_end save_get_tree rebuild_code
+	g++ main.cpp Obj/LexicalAnalysis.o Obj/Logging.o Obj/RebuildCodeFromTree.o Obj/RecursiveDescent.o Obj/InAndOut.o Obj/Backend.o Obj/SaveAndGetTree.o $(C_FLAGS) -o Exe/Start.exe
 
 run:
 	cd Libs/CPU
 	.\Exe\Comp.exe ..\..\Main.sy
 	Exe/Start.exe a.sy
+
+rebuild_code:
+	g++ -c Libs/RebuildCodeFromTree/RebuildCodeFromTree.cpp $(C_FLAGS) -o Obj/RebuildCodeFromTree.o
 
 save_get_tree:
 	g++ -c Libs/SaveAndGetTree/SaveAndGetTree.cpp $(C_FLAGS) -o Obj/SaveAndGetTree.o

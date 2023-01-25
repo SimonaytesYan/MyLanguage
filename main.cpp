@@ -5,6 +5,7 @@
 #include "Libs/LexicalAnalysis/LexicalAnalysis.h"
 #include "Libs/ResursiveDescent/RecursiveDescent.h"
 #include "Libs/CreateAssembler/CreateAssembler.h"
+#include "Libs/RebuildCodeFromTree/RebuildCodeFromTree.h"
 
 const char PROGRAM_FILE_NAME[] = "Main.sym";
 const char ASM_FILE_NAME[]     = "Main.sy";
@@ -15,13 +16,15 @@ static void GraphicDumpComands(Program_t program);
 
 const int  COMPILE_PROGRAM = 0;
 const int  COMPILE_TREE    = 1;
+const int  REBUILD_CODE    = 2;
 const char TREE_PATH[]     = "Tree.alt";
 
 int main()
 {
     printf("Start main\n");
-    printf("Enter %d to compile  program\n",       COMPILE_PROGRAM);
-    printf("Enter %d to compile tree from file\n", COMPILE_TREE);
+    printf("Enter %d to compile  program\n",                 COMPILE_PROGRAM);
+    printf("Enter %d to compile tree from file\n",           COMPILE_TREE);
+    printf("Enter %d to rebuild code from tree from file\n", REBUILD_CODE);
     
     int operation_mode = 0;
     scanf("%d", &operation_mode);
@@ -50,7 +53,7 @@ int main()
 
         Program_tDtor(program);
     }
-    else
+    else if (operation_mode == COMPILE_TREE)
     {
         Tree lang_tree = {};
         TreeCtor(&lang_tree);
@@ -61,6 +64,17 @@ int main()
 
         ReturnIfError(CreateAsmFromTree(&lang_tree, ASM_FILE_NAME));
 
+        DeleteNode(lang_tree.root);
+    }
+    else if (operation_mode == REBUILD_CODE)
+    {
+        Tree lang_tree = {};
+        TreeCtor(&lang_tree);
+
+        ReturnIfError(GetTreeFromFile(&lang_tree, TREE_PATH));
+
+        RebuildCodeFromTreeInFile(&lang_tree, "REBUILD.sym");
+        
         DeleteNode(lang_tree.root);
     }
 
