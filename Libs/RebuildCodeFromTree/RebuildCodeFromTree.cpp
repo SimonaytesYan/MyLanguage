@@ -13,22 +13,38 @@ const int MAIN_CODE      = 3;
 
 int RebuildCodeFromNode(Node* node, FILE* fp, int* number_tabs, int* program_block);
 
+int RebuildFict(Node* node, FILE* fp, int* number_tabs, int* program_block);
+
+int RebuildKeyword(Node* node, FILE* fp, int* number_tabs, int* program_block);
+
+int RebuildIf(Node* node, FILE* fp, int* number_tabs, int* program_block);
+
+int RebuildFunction(Node* node, FILE* fp, int* number_tabs, int* program_block);
+
+int RebuildReturn(Node* node, FILE* fp, int* number_tabs, int* program_block);
+
+int RebuildCall(Node* node, FILE* fp, int* number_tabs, int* program_block);
+
+int RebuildArgs(Node* node, FILE* fp, bool* first, int* number_tabs, int* program_block);
+
+int RebuildOperator(Node* node, FILE* fp, int* number_tabs, int* program_block);
+
 int RebuildOperator(Node* node, FILE* fp, int* number_tabs, int* program_block)
 {
     if (VAL_OP(node) == OP_OUT)
     {
-        fprintf(fp, "%s ", STD_OPERATORS[VAL_OP(node) - 1]);
+        fprintf(fp, "%s ", STD_OPERATORS[VAL_OP(node) - 1].name);
         ReturnIfError(RebuildCodeFromNode(R(node), fp, number_tabs, program_block));
         return 0;
     }
     if (VAL_OP(node) == OP_IN)
     {
-        fprintf(fp, "%s", STD_OPERATORS[VAL_OP(node) - 1]);
+        fprintf(fp, "%s", STD_OPERATORS[VAL_OP(node) - 1].name);
         return 0;
     }
     if (VAL_OP(node) == OP_SQRT || VAL_OP(node) == OP_NOT)
     {
-        fprintf(fp, "%s( ", STD_OPERATORS[VAL_OP(node) - 1]);
+        fprintf(fp, "%s( ", STD_OPERATORS[VAL_OP(node) - 1].name);
         ReturnIfError(RebuildCodeFromNode(R(node), fp, number_tabs, program_block));
         fprintf(fp, " )");
         return 0;
@@ -42,7 +58,7 @@ int RebuildOperator(Node* node, FILE* fp, int* number_tabs, int* program_block)
     }
     fprintf(fp, "(");
     ReturnIfError(RebuildCodeFromNode(L(node), fp, number_tabs, program_block));
-    fprintf(fp, " %s ", STD_OPERATORS[VAL_OP(node) - 1]);
+    fprintf(fp, " %s ", STD_OPERATORS[VAL_OP(node) - 1].name);
     ReturnIfError(RebuildCodeFromNode(R(node), fp, number_tabs, program_block));
     fprintf(fp, ")");
 
@@ -154,6 +170,10 @@ int RebuildIf(Node* node, FILE* fp, int* number_tabs, int* program_block)
 int RebuildKeyword(Node* node, FILE* fp, int* number_tabs, int* program_block)
 {
     MakeIndent(*number_tabs);
+
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wswitch-enum"
+
     switch (VAL_KW(node))
     {
         case KEYWORD_IF:
@@ -177,6 +197,8 @@ int RebuildKeyword(Node* node, FILE* fp, int* number_tabs, int* program_block)
         default:
             break;
     }
+
+    #pragma GCC diagnostic pop
 
     return 0;
 }
@@ -208,8 +230,8 @@ int RebuildCodeFromNode(Node* node, FILE* fp, int* number_tabs, int* program_blo
 
     if (!IS_FICT(node) && !IS_FUNC(node))
     {
-        if (*program_block == AFTER_FUNCTION || 
-            *program_block == GLOVAL_VARS && !IS_VAR(node) && !IS_VAR_KEYWORD(node))
+        if ((*program_block == AFTER_FUNCTION) || 
+            (*program_block == GLOVAL_VARS && !IS_VAR(node) && !IS_VAR_KEYWORD(node)))
         {
             *program_block = MAIN_CODE;
             fprintf(fp, "\nbegin\n");
@@ -250,7 +272,13 @@ int RebuildCodeFromNode(Node* node, FILE* fp, int* number_tabs, int* program_blo
             MakeIndent(*number_tabs);
             fprintf(fp, "var %s;\n", VAL_VAR(node));
             break;
-            
+        
+        case TYPE_SYMB:
+            break; 
+
+        case UNDEF_NODE_TYPE:
+            break;
+
         default:
             break;
     }

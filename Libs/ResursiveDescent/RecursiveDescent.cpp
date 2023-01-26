@@ -372,7 +372,7 @@ static Node* GetIf(Node** ip)
     {
         val    = NodeCtorKeyword(KEYWORD_IF); 
         (*ip)++;
-        L(val) = GetLogical(ip);     //!condition
+        L(val) = GetLogical(ip);                                                        //!condition
         CheckSyntaxError(IS_KW(*ip) && (VAL_KW(*ip) == KEYWORD_THEN), *ip, nullptr);
         (*ip)++;
 
