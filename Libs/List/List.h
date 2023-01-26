@@ -66,6 +66,9 @@ int Logica1IndexToPhys(List* list, int logic_index, int* physic_index);
 
 int Logica1lndexToPhys(List* list, int logic_index, int* physic_index);
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
+
 int LogicaIlndexToPhys(List* list, int logic_index, int* physic_index)
 {
     if (list == nullptr)
@@ -102,6 +105,8 @@ int Logica1lndexToPhys(List* list, int logic_index, int* physic_index)
 
     return 0;
 }
+
+#pragma GCC diagnostic pops
 
 int ListIterate(List* list, int* index)
 {
@@ -344,7 +349,8 @@ void GraphicDump(List* list)
 
     fclose(fp);
 
-    char comand[50] = "";
+    char comand[100] = "";
+    
     sprintf(comand, LIST_COMAND_PROTOTYPE, LIST_GRAPHIC_DUMP_CNT, LIST_GRAPHIC_DUMP_CNT);
     system(comand);
     
