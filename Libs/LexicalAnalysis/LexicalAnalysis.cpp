@@ -17,7 +17,7 @@ static size_t skip_spaces_s(const char* s)
     return skipped;
 }
 
-static void GetNumber(const char* buffer, size_t *ind, const size_t ip, Node* program, const int line)
+static void GetNumber(const char* buffer, size_t *ind, const size_t ip, Node* program, const size_t line)
 {
     #ifdef DEBUG
         fprintf(stderr, "NUMBER\n");
@@ -29,10 +29,10 @@ static void GetNumber(const char* buffer, size_t *ind, const size_t ip, Node* pr
     program[ip].val.number_cmd_in_text      = *ind + 1;
     program[ip].val.number_cmd_line_in_text = line + 1;
 
-    (*ind) += add_to_ind;
+    (*ind) += (size_t)add_to_ind;
 }
 
-static bool GetOperator(const char* buffer, size_t *ind, const size_t ip, Node* program, const int line)
+static bool GetOperator(const char* buffer, size_t *ind, const size_t ip, Node* program, const size_t line)
 {
     bool operator_found = false;
     for(int k = 0; k < STD_OPERATORS_NUM; k++)
@@ -60,10 +60,10 @@ static bool GetOperator(const char* buffer, size_t *ind, const size_t ip, Node* 
     return operator_found;
 }
 
-static void GetVar(const char* buffer, size_t *ind, const size_t ip, Node* program, const int line)
+static void GetVar(const char* buffer, size_t *ind, const size_t ip, Node* program, const size_t line)
 {
-    int        add_to_ind               = 0;
-    const char new_var[MAX_VAR_SIZE]  = "";
+    int  add_to_ind               = 0;
+    char new_var[MAX_VAR_SIZE]  = "";
     sscanf(buffer + *ind, "%[a-zA-Z0-9_]%n", new_var, &add_to_ind);
 
     if (add_to_ind != 0)
@@ -74,11 +74,11 @@ static void GetVar(const char* buffer, size_t *ind, const size_t ip, Node* progr
         program[ip] = _NodeCtorVar(new_var);
         program[ip].val.number_cmd_in_text = *ind + 1;
         program[ip].val.number_cmd_line_in_text = line + 1;
-        (*ind) += add_to_ind;
+        (*ind) += (size_t)add_to_ind;
     }
 }
 
-static void GetSymbol(const char* buffer, size_t *ind, const size_t ip, Node* program, const int line)
+static void GetSymbol(const char* buffer, size_t *ind, const size_t ip, Node* program, const size_t line)
 {
     #ifdef DEBUG
         fprintf(stderr, "SYMBOL\n");
@@ -86,15 +86,19 @@ static void GetSymbol(const char* buffer, size_t *ind, const size_t ip, Node* pr
 
     int symbol   = 0;
     int add_to_ind = 0;
+    
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wformat="
     sscanf(buffer + *ind, "%c%n", &symbol, &add_to_ind);
+    #pragma GCC diagnostic pop
 
     program[ip] = _NodeCtorSymb(symbol);
     program[ip].val.number_cmd_in_text      = *ind + 1;
     program[ip].val.number_cmd_line_in_text = line + 1;
-    (*ind) += add_to_ind;
+    (*ind) += (size_t)add_to_ind;
 }
 
-static bool GetKeyword(const char* buffer, size_t *ind, const size_t ip, Node* program, const int line)
+static bool GetKeyword(const char* buffer, size_t *ind, const size_t ip, Node* program, const size_t line)
 {
     bool keyword_found = false;
     for(int k = 0; k < KEYWORDS_NUM; k++)
@@ -132,16 +136,16 @@ Node* GetProgramFromFile(const char* program_file_name, size_t* program_size)
         printf("number lines      = %d\n", number_lines);
     #endif
     
-    FILE*       fp      = fopen(program_file_name, "r");
-    const char* buffer  = (char*)calloc(1, max_line_size + 1);
-    Node*       program = (Node*)calloc(program_text_size, sizeof(Node));
-    int         ip      = 0;
+    FILE*  fp      = fopen(program_file_name, "r");
+    char*  buffer  = (char*)calloc(1, max_line_size + 1);
+    Node*  program = (Node*)calloc(program_text_size, sizeof(Node));
+    size_t ip      = 0;
 
     CHECK(fp      == nullptr, "error during opening program file",          nullptr);
     CHECK(buffer  == nullptr, "error during allocation memory for buffer",  nullptr);
     CHECK(program == nullptr, "error during allocation memory for program", nullptr);
 
-    for(int line = 0; line < number_lines; line++)
+    for(size_t line = 0; line < number_lines; line++)
     {
         int buffer_size = 0;
         fscanf(fp, "%[^\n]%n", buffer, &buffer_size);
@@ -161,7 +165,7 @@ Node* GetProgramFromFile(const char* program_file_name, size_t* program_size)
         ind += skip_spaces_s(buffer + ind);
         while (buffer[ind] != '\0' && buffer[ind] != '\r' && buffer[ind] != '\n')
         {
-            int old_ind = ind;
+            size_t old_ind = ind;
             if ('0' <= buffer[ind] && buffer[ind] <= '9')
                 GetNumber(buffer, &ind, ip, program, line);
             else if (!GetOperator(buffer, &ind, ip, program, line))
