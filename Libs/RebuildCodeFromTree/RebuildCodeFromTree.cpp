@@ -49,7 +49,7 @@ int RebuildOperator(Node* node, FILE* fp, int* number_tabs, int* program_block)
     return 0;
 }
 
-int RebuildArgs(Node* node, FILE* fp, bool* first)
+int RebuildArgs(Node* node, FILE* fp, bool* first, int* number_tabs, int* program_block)
 {
     CHECK(fp == nullptr,    "", -1);
     CHECK(first == nullptr, "", -1);
@@ -57,28 +57,35 @@ int RebuildArgs(Node* node, FILE* fp, bool* first)
     if (node == nullptr)
         return 0;
 
-    if (IS_VAR(node))
+    if (!IS_FICT(node))
     {
-        if (*first)
-        {
-            fprintf(fp, "%s", VAL_VAR(node));
+        if ((*first))
             *first = false;
-        }
         else
-            fprintf(fp, ", %s", VAL_VAR(node));
+            fprintf(fp, ", ");
+
+        if (IS_VAR(node))
+            fprintf(fp, "%s", VAL_VAR(node));
+        if (IS_NUM(node))
+            fprintf(fp, "%d", VAL_N(node));
+        if (IS_OP(node))
+            RebuildOperator(node, fp, number_tabs, program_block);
     }
 
-    RebuildArgs(L(node), fp, first);
-    RebuildArgs(R(node), fp, first);
+    if (IS_FICT(node))
+    {
+        RebuildArgs(L(node), fp, first, number_tabs, program_block);
+        RebuildArgs(R(node), fp, first, number_tabs, program_block);
+    }
 
     return 0;
 }
 
-int RebuildCall(Node* node, FILE* fp)
+int RebuildCall(Node* node, FILE* fp, int* number_tabs, int* program_block)
 {
     fprintf(fp, "call %s(", VAL_FUNC(node));
     bool first = true;
-    ReturnIfError(RebuildArgs(node, fp, &first));
+    ReturnIfError(RebuildArgs(R(node), fp, &first, number_tabs, program_block));
     fprintf(fp, ")");
 
     return 0;
@@ -98,7 +105,7 @@ int RebuildFunction(Node* node, FILE* fp, int* number_tabs, int* program_block)
 {
     fprintf(fp, "function %s(", VAL_FUNC(node));
     bool first = true;
-    RebuildArgs(L(node), fp, &first);
+    RebuildArgs(L(node), fp, &first, number_tabs, program_block);
     fprintf(fp, ")\n");
 
     MakeIndent(*number_tabs);
@@ -112,38 +119,45 @@ int RebuildFunction(Node* node, FILE* fp, int* number_tabs, int* program_block)
     return 0;
 }
 
+int RebuildIf(Node* node, FILE* fp, int* number_tabs, int* program_block)
+{
+    fprintf(fp, "if ");
+    ReturnIfError(RebuildCodeFromNode(L(node), fp, number_tabs, program_block));
+    fprintf(fp, " then\n");
+
+    MakeIndent(*number_tabs);
+    fprintf(fp, "begin\n");
+    (*number_tabs)++;
+    ReturnIfError(RebuildCodeFromNode(RL(node), fp, number_tabs, program_block)); 
+    (*number_tabs)--;  
+
+    MakeIndent(*number_tabs);
+    fprintf(fp, "end\n");
+    if (RR(node) != nullptr)
+    {
+        MakeIndent(*number_tabs);
+        fprintf(fp, "else\n"); 
+        MakeIndent(*number_tabs);
+        fprintf(fp, "begin\n");
+
+        (*number_tabs)++;
+        ReturnIfError(RebuildCodeFromNode(RR(node), fp, number_tabs, program_block)); 
+        (*number_tabs)--;  
+
+        MakeIndent(*number_tabs);
+        fprintf(fp, "end\n");
+    }
+
+    return 0;
+}
+
 int RebuildKeyword(Node* node, FILE* fp, int* number_tabs, int* program_block)
 {
     MakeIndent(*number_tabs);
     switch (VAL_KW(node))
     {
         case KEYWORD_IF:
-            fprintf(fp, "if ");
-            ReturnIfError(RebuildCodeFromNode(L(node), fp, number_tabs, program_block));
-            fprintf(fp, " then\n");
-
-            MakeIndent(*number_tabs);
-            fprintf(fp, "begin\n");
-            (*number_tabs)++;
-            ReturnIfError(RebuildCodeFromNode(RL(node), fp, number_tabs, program_block)); 
-            (*number_tabs)--;  
-
-            MakeIndent(*number_tabs);
-            fprintf(fp, "end\n");
-            if (RR(node) != nullptr)
-            {
-                MakeIndent(*number_tabs);
-                fprintf(fp, "else\n"); 
-                MakeIndent(*number_tabs);
-                fprintf(fp, "begin\n");
-
-                (*number_tabs)++;
-                ReturnIfError(RebuildCodeFromNode(RR(node), fp, number_tabs, program_block)); 
-                (*number_tabs)--;  
-
-                MakeIndent(*number_tabs);
-                fprintf(fp, "end\n");
-            }
+            ReturnIfError(RebuildIf(node, fp, number_tabs, program_block));
             break;
 
         case KEYWORD_WHILE:
@@ -221,7 +235,7 @@ int RebuildCodeFromNode(Node* node, FILE* fp, int* number_tabs, int* program_blo
             ReturnIfError(RebuildReturn(node, fp, number_tabs, program_block));
             break;
         case TYPE_CALL:
-            ReturnIfError(RebuildCall(node, fp));
+            ReturnIfError(RebuildCall(node, fp, number_tabs, program_block));
             break;
         case TYPE_FUNCTION:
             *program_block = IN_FUNCTION;
