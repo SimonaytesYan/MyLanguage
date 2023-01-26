@@ -42,8 +42,6 @@ typedef struct Tree
     LogInfo debug     = {};
 }Tree;
 
-static void EquateNode(Node* node_a, Node* node_b);
-
 static int   NodeCtor(Node* node, Node_t val);
 
 static Node  _NodeCtorNum(double val);
@@ -59,8 +57,6 @@ static Node* NodeCtorNum(double val);
 static Node* NodeCtorOp(OPER_TYPES val);
 
 static Node* NodeCtorVar(const char* val);
-
-static int   NodeCmp(Node* node_a, Node* node_b);
 
 static Node* CpyNode(Node* node);
 
@@ -85,82 +81,6 @@ static void  DFS(Node* node, DFS_f pre_func, void* args1, DFS_f in_func, void* a
 static void  DeleteNode(Node* node);
  
 static void  DFSNodeDtor(Node* node);
-
-static int   CmpNode_t(Node_t* a, Node_t* b);
-
-static void EquateNode(Node* node_a, Node* node_b)
-{
-    if (TYPE(node_a) == TYPE_VAR)
-        free(VAL_VAR(node_a));
-
-    L(node_a) = L(node_b);
-    R(node_a) = R(node_b);
-
-    TYPE(node_a) = TYPE(node_b);
-
-    switch (TYPE(node_b))
-    {
-    case TYPE_SYMB:
-        
-        break;
-    case TYPE_NUM:
-        VAL_N(node_a) = VAL_N(node_b);
-        break;
-    case TYPE_OP:
-        VAL_OP(node_a) = VAL_OP(node_b);
-        break;
-    case TYPE_VAR:
-    {
-        VAL_VAR(node_a) = (char*)calloc(strlen(VAL_VAR(node_b)) + 1, sizeof(char));
-        strcpy(VAL_VAR(node_a), VAL_VAR(node_b));
-        break;
-    }
-    case UNDEF_NODE_TYPE:
-        break;
-    default:
-        break;
-    }
-}
-
-static int   CmpNode_t(Node_t* a, Node_t* b)
-{
-    if (a->type != b->type)
-        return 1;
-    
-    switch (a->type)
-    {
-        case TYPE_NUM:
-            return !IS_DOUBLE_EQ(a->val.dbl, b->val.dbl);
-        case TYPE_OP:
-            return a->val.op  != b->val.op;
-        case TYPE_VAR:
-            return strcmp(a->val.var, b->val.var);
-        
-        case UNDEF_NODE_TYPE:
-            return 0;
-        default:
-            return 0;
-    }
-}
-
-int NodeCmp(Node* node_a, Node* node_b)
-{
-    if (node_a == nullptr && node_b == nullptr)
-        return 0;
-    if (node_a == nullptr || node_b == nullptr)
-        return 1;
-
-    if (CmpNode_t(&(node_a->val), &(node_b->val)))
-        return 1;
-
-    if (NodeCmp(node_a->left, node_b->left) != 0)
-        return 1;
-    
-    if (NodeCmp(node_a->right, node_b->right) != 0)
-        return 1;
-    
-    return 0;
-}
 
 static void DFS(Node* node, DFS_f pre_func, void* args1, DFS_f in_func, void* args2, DFS_f post_func, void* args3)
 {
@@ -200,38 +120,38 @@ static void WriteNodeAndEdge(Node* node, void* fp_void)
     {
         case TYPE_CREATE_VAR:
         {
-            fprintf(fp, node_format, node, light_green, node);
+            fprintf(fp, node_format, node, light_green);
             fprintf(fp, "CREATE_VAR | %s", VAL_VAR(node));
             break;
         }
         case TYPE_SYMB:
         {
-            fprintf(fp, node_format, node, light_blue, node);
+            fprintf(fp, node_format, node, light_blue);
             fprintf(fp, "SYMB | [%c]%d", VAL_SYMB(node), VAL_SYMB(node));
             break;
         }
         case TYPE_NUM:
         {
-            fprintf(fp, node_format, node, light_blue, node);
+            fprintf(fp, node_format, node, light_blue);
             fprintf(fp, "NUM | %d", VAL_N(node));
             break;
         }
         case TYPE_OP:
         {
-            fprintf(fp, node_format, node, light_yellow, node);
+            fprintf(fp, node_format, node, light_yellow);
             fprintf(fp, "OPER | ");
             fprintOper
             break;
         }
         case TYPE_VAR:
         {
-            fprintf(fp, node_format, node, light_blue, node);
+            fprintf(fp, node_format, node, light_blue);
             fprintf(fp, "VAR | %s ", VAL_VAR(node));
             break;
         }
         case TYPE_KEYWORD:
         {
-            fprintf(fp, node_format, node, light_green, node);
+            fprintf(fp, node_format, node, light_green);
             if (VAL_KW(node) == 0)
                 fprintf(fp, "KEYWORD | %d ", 0);
             else
@@ -240,25 +160,25 @@ static void WriteNodeAndEdge(Node* node, void* fp_void)
         }
         case TYPE_FUNCTION:
         {
-            fprintf(fp, node_format, node, light_blue, node);
+            fprintf(fp, node_format, node, light_blue);
             fprintf(fp, "FUNCTION | [%s] ", node->val.val.function);
             break;
         }
         case TYPE_CALL:
         {
-            fprintf(fp, node_format, node, light_green, node);
+            fprintf(fp, node_format, node, light_green);
             fprintf(fp, "CALL | [%s] ", node->val.val.function);
             break;
         }
         case TYPE_RETURN:
         {
-            fprintf(fp, node_format, node, light_red, node);
+            fprintf(fp, node_format, node, light_red);
             fprintf(fp, "RETURN");
             break;
         }
         case TYPE_FICT:
         {
-            fprintf(fp, node_format, node, light_grey, node);
+            fprintf(fp, node_format, node, light_grey);
             fprintf(fp, "FICT ");
             break;
         }
@@ -509,7 +429,7 @@ static Node* NodeCtorSymb(int val)
     return new_node;
 }
 
-static Node* NodeCtorNum(double val)
+static Node* NodeCtorNum(int val)
 {
     Node* new_node = (Node*)calloc(1, sizeof(Node));
 
@@ -562,7 +482,7 @@ static Node  _NodeCtorSymb(int val)
     return new_node;
 }
 
-static Node _NodeCtorNum(double val)
+static Node _NodeCtorNum(int val)
 {
     Node new_node    = {};
 

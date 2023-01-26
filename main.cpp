@@ -88,7 +88,7 @@ static void GraphicDumpComands(Program_t program)
     TreeCtor(&comands);
     comands.root = program.comands;
 
-    for(int i = 0; i < program.comands_num - 1; i++)
+    for(size_t i = 0; i < program.comands_num - 1; i++)
     {
         program.comands[i].right = &program.comands[i+1];
         program.comands[i].left = nullptr;
@@ -96,7 +96,7 @@ static void GraphicDumpComands(Program_t program)
     DUMP_T(&comands);
     GraphicDump(&comands);
 
-    for(int i = 0; i < program.comands_num; i++)
+    for(size_t i = 0; i < program.comands_num; i++)
     {
         program.comands[i].right = nullptr;
         program.comands[i].left = nullptr;
@@ -105,7 +105,7 @@ static void GraphicDumpComands(Program_t program)
 
 static void Program_tDtor(Program_t program)
 {
-    for(int i = 0; i < program.comands_num; i++)
+    for(size_t i = 0; i < program.comands_num; i++)
         if (program.comands[i].val.type == TYPE_VAR)
             free(program.comands[i].val.val.var);
     free(program.comands);
