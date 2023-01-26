@@ -68,6 +68,7 @@ int Logica1lndexToPhys(List* list, int logic_index, int* physic_index);
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 
 int LogicaIlndexToPhys(List* list, int logic_index, int* physic_index)
 {
@@ -106,7 +107,7 @@ int Logica1lndexToPhys(List* list, int logic_index, int* physic_index)
     return 0;
 }
 
-#pragma GCC diagnostic pops
+#pragma GCC diagnostic pop
 
 int ListIterate(List* list, int* index)
 {
@@ -167,23 +168,23 @@ int ListLinerization(List* list)
         if (i + 1 == list->size)
             new_data[i + 1].next = 0;
         else
-            new_data[i + 1].next = i + 2;
-        new_data[i + 1].prev = i;
+            new_data[i + 1].next = (int)i + 2;
+        new_data[i + 1].prev = (int)i;
     }
 
     new_data[0].next = 1;
-    new_data[0].prev = list->size;
+    new_data[0].prev = (int)list->size;
 
     free(list->data);
     list->data = new_data;
 
     if (list->capacity != list->size)
     {
-        list->free = list->size + 1 ;
+        list->free = (int)list->size + 1 ;
         list->data[list->size + 1].next = -1;
         for(size_t i = list->size + 2; i <= list->capacity; i++)
         {
-            list->data[i - 1].prev = i;
+            list->data[i - 1].prev = (int)i;
             list->data[i].next     = -1;
             list->data[i].prev     = -1;
         }
@@ -254,113 +255,6 @@ int ListLinerization(List* list)
     
     return 0;
 }*/
-
-void GraphicDump(List* list)
-{
-    char name[20] = "";
-    sprintf(name, "GraphicDumps/dump%d", LIST_GRAPHIC_DUMP_CNT);
-    FILE* fp = fopen(name, "w");
-
-    fprintf(fp, "digraph G{\n");
-    fprintf(fp, "rankdir = LR;\n");
-    fprintf(fp, "node[shape = record, fontsize = 14, style=filled];\n");
-    fprintf(fp, "splines = ortho\n");
-
-    CHECK(list == nullptr || list == POISON_PTR, "Pointer to list = null or poison", (void)0);
-    CHECK(list->data == nullptr || list->data == POISON_PTR, "Pointer to list data = null or poison", (void)0);
-
-    fprintf(fp, "info[label = \"size = %llu\\n |"         \
-                               "capasity = %d \\n |"    \
-                               "<f> free = %d \\n |"    \
-                               "linerized = %d \\n \"]\n",
-                               list->size, 
-                               list->capacity, 
-                               list->free, 
-                               list->linerized);
-
-    for(size_t i = 0; i <= list->capacity; i++)
-    {
-        if (i == 0)
-            fprintf(fp, "Node%d[fillcolor = white, label = \"<i>%d \\n | <v>%d \\n | {<p> %d |<n>  %d}\"]\n", 
-                          i,              i,    list->data[i].val, list->data[i].prev, list->data[i].next);
-        else if (list->data[i].next == -1 || list->data[i].prev == -1)
-            fprintf(fp, "Node%d[fillcolor = \"#B1FF9F\", label = \"<i>%d \\n | <v>%d \\n | {<p> %d |<n>  %d}\"]\n", 
-                          i,              i,    list->data[i].val, list->data[i].prev, list->data[i].next);
-        else
-            fprintf(fp, "Node%d[fillcolor = \"#8F9EFF\", label = \"<i>%d \\n | <v>%d \\n | {<p> %d |<n>  %d}\"]\n", 
-                          i,              i,    list->data[i].val, list->data[i].prev, list->data[i].next);
-    }
-    
-    fprintf(fp, "edge[weight = 1000, style=\"invis\"]\n");
-    for(size_t i = 0; i <= list->capacity; i++)
-    {
-        if (i == 0)
-            fprintf(fp, "info:s -> Node0:v:n\n");
-        else 
-            fprintf(fp, "Node%d:v:e->Node%d:v:w\n", i - 1, i);
-    }
-
-    int index = 0;
-    
-    fprintf(fp, "edge [color = \"blue\", style=\"solid\"]\n");
-    index = 0;
-    for(size_t i = 0; i <= list->size; i++)
-    {
-        int next = list->data[index].next;
-
-        fprintf(fp, "Node%d -> Node%d\n", index, next);
-
-        index = next;
-        if (index == 0)
-            break;
-    }
-
-    fprintf(fp, "edge [color = \"black\", style=\"solid\"]\n");
-    index = list->free;
-    if (index != -1)
-    {
-        fprintf(fp, "info:<f>:e -> Node%d\n", index);
-        for(size_t i = 0; i <= list->capacity; i++)    
-        {
-            int free_ind = list->data[index].prev;
-            if (free_ind == -1)
-                break;
-
-            fprintf(fp, "Node%d -> Node%d\n", index, free_ind);
-
-            index = free_ind;
-        }
-    }
-
-    index = 0;
-    fprintf(fp, "edge [constraint=false, color = \"red\"]\n");
-    for(size_t i = 0; i <= list->size; i++)
-    {
-        int prev = list->data[index].prev;
-
-        fprintf(fp, "Node%d -> Node%d\n", index, prev);
-
-        index = prev;
-        if (index == 0)
-            break;
-    }
-
-    fprintf(fp, "}");
-
-    fclose(fp);
-
-    char comand[100] = "";
-    
-    sprintf(comand, LIST_COMAND_PROTOTYPE, LIST_GRAPHIC_DUMP_CNT, LIST_GRAPHIC_DUMP_CNT);
-    system(comand);
-    
-    char path[50] = "";
-    LogPrintf("<hr>");
-    LogPrintf("<img src=\"GraphicDumps/Dump%d.png\">\n", LIST_GRAPHIC_DUMP_CNT);
-    LogPrintf("<hr>");
-
-    LIST_GRAPHIC_DUMP_CNT++;
-}
 
 #define DUMP_L(list) DumpList(list, __PRETTY_FUNCTION__, __FILE__, __LINE__)
 
@@ -452,14 +346,14 @@ int ListConstructor(List* list, int capacity, int line, const char* name, const 
     LogAndParseErr(list == nullptr, NULL_LIST_POINTER);
 
     list->size     = 0;
-    list->capacity = capacity;
+    list->capacity = (size_t)capacity;
     list->free     = -1;
-    list->data     = (ListElem*)calloc(capacity + 1, sizeof(ListElem));
+    list->data     = (ListElem*)calloc((size_t)(capacity + 1), sizeof(ListElem));
     if (list->data != nullptr)
         for(size_t i = list->capacity; i >= 1; i--)
         {
             list->data[i] = {ELEM_POISON, -1, list->free};
-            list->free    = i;
+            list->free    = (int)i;
         }
 
     list->debug.name     = name;
@@ -482,7 +376,11 @@ int ListDtor(List* list)
     list->linerized = false;
 
     free(list->data);
+    
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wcast-qual"
     list->data = (ListElem*)POISON_PTR;
+    #pragma GCC diagnostic pop
 
     list->debug.file     = (const char*)POISON_PTR;
     list->debug.function = (const char*)POISON_PTR;
@@ -506,7 +404,7 @@ int ListRemove(List* list, int index)
 {
     ReturnIfError(ListCheck(list));
 
-    CHECK(index > list->capacity || index <= 0, "Error index", -1);
+    CHECK((size_t)index > list->capacity || index <= 0, "Error index", -1);
 
     int next_ind = list->data[index].next;
     int prev_ind = list->data[index].prev;
@@ -537,21 +435,23 @@ int ResizeUp(List* list, int new_capacity)
 {
     ReturnIfError(ListCheck(list));
 
-    list->data = (ListElem*)realloc(list->data, sizeof(ListElem)*(new_capacity + 1));
+    list->data = (ListElem*)realloc(list->data, sizeof(ListElem)*(size_t)(new_capacity + 1));
 
     if (list->data == nullptr)
         return MEMORY_ALLOCATION_ERROR;
 
-    for(size_t i = new_capacity; i >= list->capacity + 1; i--)
+    for(size_t i = (size_t)new_capacity; i >= list->capacity + 1; i--)
     {
         list->data[i] = {ELEM_POISON, -1, list->free};
-        list->free = i;
+        list->free = (int)i;
     }
     
-    list->capacity = new_capacity;
+    list->capacity = (size_t)new_capacity;
 
     return 0;
 }
+
+int ResizeIfNeed(List *list);
 
 int ResizeIfNeed(List *list)
 {
@@ -561,7 +461,7 @@ int ResizeIfNeed(List *list)
         if (list->capacity == 0)
             new_capacity = 2;
         else
-            new_capacity = list->capacity * ResizeCoef;
+            new_capacity = (int)(list->capacity * ResizeCoef);
         ReturnIfError(ResizeUp(list, new_capacity));
     }
 
@@ -572,7 +472,7 @@ int ListInsert(List* list, ListElem_t value, int after_which, int* index)
 {
     ReturnIfError(ListCheck(list));
 
-    CHECK(after_which > list->capacity || after_which < 0, "Error index", -1);
+    CHECK((size_t)after_which > list->capacity || after_which < 0, "Error index", -1);
     
     CHECK(list->data[after_which].next == -1 || list->data[after_which].prev == -1, "Index to not inserted element", -1);
 

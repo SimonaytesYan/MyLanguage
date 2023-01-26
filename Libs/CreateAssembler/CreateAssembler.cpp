@@ -2,11 +2,16 @@
 #include "../Logging/Logging.h"
 #include "../InAndOut/InAndOut.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wwrite-strings"
+
 struct ListElem_t
 {
     char*  name = "";
     size_t index = 0;
 };
+
+void PrintStackElemInLog(ListElem_t val);
 
 void PrintStackElemInLog(ListElem_t val)
 {
@@ -22,6 +27,10 @@ const ListElem_t START_SCOPE       = {"#", 0};
 const ListElem_t START_FUNC_SCOPE  = {"*", 0};
 const char       OFFSET_REGISTER[] = "rdx";
 
+#pragma GCC diagnostic pop
+
+int LabelCounter();
+
 int LabelCounter()
 {
     static int cnt = 0;
@@ -29,9 +38,9 @@ int LabelCounter()
     return cnt;
 }
 
-int  AddVar(const char* var);
+int  AddVar(char* var);
 
-int  AddFunction(const char* name, int label_number);
+int  AddFunction(char* name, int label_number);
 
 int  GetVarIndex(const char* var, bool* is_local);
 
@@ -57,7 +66,7 @@ int  PutCall(Node* node, FILE* output_file);
 
 int  PutReturn(Node* node, FILE* output_file);
 
-int  GetLastVarIndexToChangeOffset(const char* var);
+int  GetLastVarIndexToChangeOffset();
 
 void StartScope();
 
@@ -72,7 +81,7 @@ int  PutArgsInCallFunc(Node* node, FILE* output_file);
 //!-----------------
 //!@return error code
 //!------------
-int AddVar(const char* var)
+int AddVar(char* var)
 {
     int var_index = 1;
     int index     = 0;
@@ -94,8 +103,8 @@ int AddVar(const char* var)
     }
     if (VARS.size == 0)
         var_index = 0;
-    ListElem_t value = {(char*)var, var_index};
-    ListInsert(&VARS, value, VARS.size);
+    ListElem_t value = {var, (size_t)var_index};
+    ListInsert(&VARS, value, (int)VARS.size);
 
     return 0;
 }
@@ -103,7 +112,7 @@ int AddVar(const char* var)
 //!-----------------
 //!@return error code
 //!------------
-int AddFunction(const char* name, int label_number)
+int AddFunction(char* name, int label_number)
 {
     int index   = 0;
     int list_end = 0;
@@ -119,8 +128,8 @@ int AddFunction(const char* name, int label_number)
             break;
         ListIterate(&FUNCS, &index);
     }
-    ListElem_t value = {(char*)name, label_number};
-    ListInsert(&FUNCS, value, FUNCS.size);
+    ListElem_t value = {name, (size_t)label_number};
+    ListInsert(&FUNCS, value, (int)FUNCS.size);
 
     DUMP_L(&FUNCS);
 
@@ -129,12 +138,12 @@ int AddFunction(const char* name, int label_number)
 
 void StartScope()
 {
-    ListInsert(&VARS, START_SCOPE, VARS.size);
+    ListInsert(&VARS, START_SCOPE, (int)VARS.size);
 }
 
 void StartFuncScope()
 {
-    ListInsert(&VARS, START_FUNC_SCOPE, VARS.size);
+    ListInsert(&VARS, START_FUNC_SCOPE, (int)VARS.size);
 }
 
 int EndScope()
@@ -168,7 +177,7 @@ int  GetFuncIndex(const char* name)
     {
 
         if (!strcmp(FUNCS.data[index].val.name, name))
-            return FUNCS.data[index].val.index;
+            return (int)FUNCS.data[index].val.index;
         if (index == list_end)
             break;
         ListIterate(&FUNCS, &index);
@@ -194,7 +203,7 @@ int GetVarIndex(const char* var, bool* is_local)
             *is_local = true;
 
         if (!strcmp(VARS.data[index].val.name, var))
-            return VARS.data[index].val.index;
+            return (int)VARS.data[index].val.index;
         if (index == list_end)
             break;
         ListIterate(&VARS, &index);
@@ -211,7 +220,7 @@ int  GetLastVarIndexToChangeOffset()
     if (list_end == -1)
         return -1;
 
-    return VARS.data[list_end].val.index;
+    return (int)VARS.data[list_end].val.index;
 }
 
 int CreateAsmFromTree(Tree* tree, const char* output_file)
@@ -355,6 +364,11 @@ int PutOperator(Node* node, FILE* output_file)
             GetVar(L(node), output_file);
             break;
         }
+        case UNDEF_OPER_TYPE:
+            break;
+
+        default:
+            break;
 
     }
     return 0;
@@ -468,6 +482,9 @@ int PutFunction(Node* node, FILE* output_file)
 int PutKeyword(Node* node, FILE* output_file)
 {
     CheckSyntaxError(node != nullptr, node, -1);
+
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wswitch-enum"
     switch (VAL_KW(node))
     {
         case KEYWORD_IF:
@@ -488,6 +505,8 @@ int PutKeyword(Node* node, FILE* output_file)
         default:
             break;
     }
+    #pragma GCC diagnostic pop
+
     return 0;
 }
 
@@ -530,6 +549,8 @@ int PutNodeInFile(Node* node, FILE* output_file)
     if (output_file == nullptr)
         return -1;
     
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wswitch-enum"
     switch (TYPE(node))
     {
         case TYPE_FICT:
@@ -615,6 +636,7 @@ int PutNodeInFile(Node* node, FILE* output_file)
         default:
             break;
     }
+    #pragma GCC diagnostic pop
 
     return 0;
 }

@@ -18,7 +18,7 @@ int   GetFuncFromTree(Node* node);
 int   SaveNodeInFile(const Node* node, FILE* fp);
 int   FindFunction(const char* func);
 int   FindVar(const char* var);
-int   AddVar(char* var);
+int   AddVarInStack(char* var);
 
 int SaveTreeInFile(const Tree* tree, const char* path)
 {
@@ -68,7 +68,7 @@ int PutFunctions(Node* root, FILE* fp)
     return 0;
 }
 
-int AddVar(char* var)
+int AddVarInStack(char* var)
 {
     for(size_t i = 0; i < VARS.size; i++)
     {
@@ -83,7 +83,7 @@ int GetVarsFromTree(Node* node)
 {
     if (node == nullptr) return 0;
     if (IS_VAR(node))
-        ReturnIfError(AddVar(VAL_VAR(node)));
+        ReturnIfError(AddVarInStack(VAL_VAR(node)));
 
     ReturnIfError(GetVarsFromTree(L(node)));
     ReturnIfError(GetVarsFromTree(R(node)));
