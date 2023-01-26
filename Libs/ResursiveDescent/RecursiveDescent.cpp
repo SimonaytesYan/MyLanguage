@@ -19,7 +19,7 @@ Equal     ::= Var '=' Logical ';'
 Logical   ::= PlusMinus {Logical_operator PlusMinus}?
 PlusMinus ::= MulDiv{['+','-']MulDiv}*
 MulDiv    ::= InOutCall{['*','/']InOutCall}*
-InOutCall ::= "out" Logical | "in" Var | Call | Pow
+InOutCall ::= "out" Logical | "in" | Call | Pow
 Call      ::= "call" Var '(' Logical?{',' Logical}* ')'
 Pow       ::= UnaryFunc {"^" Pow}*
 UnaryFunc ::= {"!" Brackets} | {"sqrt(" Brackets ")"} | Brackets
@@ -413,8 +413,9 @@ static Node* GetCreateVar(Node** ip)
             case KEYWORD_VAR:
             {
                 (*ip)++;
-                new_node    = NodeCtorKeyword(KEYWORD_VAR);
-                R(new_node) = GetVar(ip);
+                CheckSyntaxError(IS_VAR(*ip), *ip, nullptr);
+                new_node = NodeCtorCreateVar(VAL_VAR(*ip));
+                (*ip)++;
                 CheckSyntaxError((IS_SYMB(*ip) && VAL_SYMB(*ip) == ';'), *ip, nullptr);
                 (*ip)++;
                 break;
@@ -583,8 +584,6 @@ static Node* GetInOutCall(Node** ip)
     {
         new_node = CpyNode(*ip);
         (*ip)++;
-        CheckSyntaxError(IS_VAR(*ip), *ip, nullptr);
-        R(new_node) = GetVar(ip);
 
         #ifdef DEBUG
             printf("(end InAndOut)\n");

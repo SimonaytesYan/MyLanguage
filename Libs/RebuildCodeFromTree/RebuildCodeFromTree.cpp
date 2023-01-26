@@ -18,7 +18,6 @@ int RebuildOperator(Node* node, FILE* fp, int* number_tabs, int* program_block)
     if (VAL_OP(node) == OP_IN || VAL_OP(node) == OP_OUT)
     {
         fprintf(fp, "%s ", STD_OPERATORS[VAL_OP(node) - 1]);
-        ReturnIfError(RebuildCodeFromNode(R(node), fp, number_tabs, program_block));
         return 0;
     }
     if (VAL_OP(node) == OP_SQRT || VAL_OP(node) == OP_NOT)
@@ -142,9 +141,7 @@ int RebuildKeyword(Node* node, FILE* fp, int* number_tabs, int* program_block)
             break;
         
         case KEYWORD_VAR:
-            fprintf(fp, "var ");
-            ReturnIfError(RebuildCodeFromNode(R(node), fp, number_tabs, program_block));
-            fprintf(fp, ";\n");
+            fprintf(fp, "var %s;\n", VAL_VAR(node));
             break;
 
         default:

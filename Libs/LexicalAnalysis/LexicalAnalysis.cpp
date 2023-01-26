@@ -45,10 +45,6 @@ static bool GetOperator(const char* buffer, size_t *ind, const size_t ip, Node* 
 
         if (!strncmp(buffer + *ind, STD_OPERATORS[k].name, lenght))
         {
-            if (STD_OPERATORS[k].code == OP_IS_EQ)
-            {
-                printf("=======\n");
-            }
             #ifdef DEBUG
                 fprintf(stderr, "OPERATOR\n");
             #endif

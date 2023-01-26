@@ -218,8 +218,7 @@ Node* RecognizeNode(int node_type_std, int node_value, FILE* fp)
         {
             Node* result = NodeCtorOp((OPER_TYPES)node_value);
 
-            if (node_value == OP_SQRT || node_value == OP_NOT || 
-                node_value == OP_IN || node_value == OP_OUT)
+            if (node_value == OP_SQRT || node_value == OP_NOT ||node_value == OP_OUT)
             {
                 R(result) = GetNodeFromFile(fp);
             }
@@ -231,12 +230,8 @@ Node* RecognizeNode(int node_type_std, int node_value, FILE* fp)
 
             return result;
         }
-        case 7:                                                 //!VAR
-        {                                                   
-            Node* result = NodeCtorKeyword(KEYWORD_VAR);
-            R(result) = GetNodeFromFile(fp);
-            return result;
-        }
+        case 7:                                                 //!CREATE VAR                                            
+            return NodeCtorVar(VARS.data[node_value]);
         case 8:                                                 //!DEF FUNCTION
         {
             Node* result = NodeCtorFunction(FUNC.data[node_value]);

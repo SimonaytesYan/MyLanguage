@@ -198,6 +198,12 @@ static void WriteNodeAndEdge(Node* node, void* fp_void)
     
     switch (node->val.type)
     {
+        case TYPE_CREATE_VAR:
+        {
+            fprintf(fp, node_format, node, light_green, node);
+            fprintf(fp, "CREATE_VAR | %s", VAL_VAR(node));
+            break;
+        }
         case TYPE_SYMB:
         {
             fprintf(fp, node_format, node, light_blue, node);
@@ -455,6 +461,21 @@ static Node* NodeCtorFunction(const char* val)
     node_val.type    = TYPE_FUNCTION;
 
     node_val.val.function = (char*)calloc(strlen(val) + 1, 1);
+    strcpy(node_val.val.var, val);
+
+    NodeCtor(new_node, node_val);
+
+    return new_node;
+}
+
+static Node* NodeCtorCreateVar(const char* val)
+{
+    Node* new_node = (Node*)calloc(1, sizeof(Node));
+
+    Node_t node_val  = {};
+    node_val.type    = TYPE_CREATE_VAR;
+
+    node_val.val.var = (char*)calloc(strlen(val) + 1, 1);
     strcpy(node_val.val.var, val);
 
     NodeCtor(new_node, node_val);

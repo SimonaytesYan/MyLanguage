@@ -277,7 +277,9 @@ int GetVar(Node* node, FILE* output_file)
 
 int PutOperator(Node* node, FILE* output_file)
 {
-    printf("start operator\n");
+    #ifdef DEBUG
+        printf("start operator\n");
+    #endif
     if (IS_OP(node) && VAL_OP(node) != OP_OUT && VAL_OP(node) != OP_EQ && VAL_OP(node) != OP_IN)
     {
         PutNodeInFile(L(node), output_file);
@@ -339,12 +341,8 @@ int PutOperator(Node* node, FILE* output_file)
             break;
         }
         case OP_IN:
-        {
-            CheckSyntaxError(R(node) != nullptr, node, -1);
-            CheckSyntaxError(IS_VAR(R(node)), R(node), -1);
-            
-            fprintf(output_file, "in\n");
-            GetVar(R(node), output_file); 
+        {            
+            fprintf(output_file, "in\n"); 
             break;
         }
         case OP_EQ:
@@ -472,18 +470,6 @@ int PutKeyword(Node* node, FILE* output_file)
     CheckSyntaxError(node != nullptr, node, -1);
     switch (VAL_KW(node))
     {
-        case KEYWORD_VAR:
-        {
-            #ifdef DEBUG
-                printf("var\n");
-            #endif
-            
-            CheckSyntaxError(R(node) != nullptr, R(node), -1);
-            CheckSyntaxError(IS_VAR(R(node)), R(node), -1);
-            printf("add var <%s>\n", VAL_VAR(R(node)));
-            ReturnIfError(AddVar(VAL_VAR(R(node))));
-            return 0;
-        }
         case KEYWORD_IF:
         {
             #ifdef DEBUG
@@ -604,6 +590,17 @@ int PutNodeInFile(Node* node, FILE* output_file)
                 printf("return\n");
             #endif
             ReturnIfError(PutCall(node, output_file));
+            break;
+        }
+
+        case TYPE_CREATE_VAR:
+        {
+            #ifdef DEBUG
+                printf("create var\n");
+            #endif
+            
+            printf("add var <%s>\n", VAL_VAR(node));
+            ReturnIfError(AddVar(VAL_VAR(node)));
             break;
         }
 
