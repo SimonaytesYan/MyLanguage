@@ -68,6 +68,8 @@ static Node* GetVar(Node** s);
 
 static Node* GetNumber(Node** s);
 
+Node* CreateNodeWithChild_Op(Node* left_node, Node* right_node, OPER_TYPES op);
+
 Node* CreateNodeWithChild_Op(Node* left_node, Node* right_node, OPER_TYPES op)
 {
     Node* new_node = NodeCtorOp(op);
@@ -403,18 +405,14 @@ static Node* GetCreateVar(Node** ip)
 
     if (TYPE(*ip) == TYPE_KEYWORD)
     {
-        switch (VAL_KW(*ip))
+        if (VAL_KW(*ip) == KEYWORD_VAR)
         {
-            case KEYWORD_VAR:
-            {
-                (*ip)++;
-                CheckSyntaxError(IS_VAR(*ip), *ip, nullptr);
-                new_node = NodeCtorCreateVar(VAL_VAR(*ip));
-                (*ip)++;
-                CheckSyntaxError((IS_SYMB(*ip) && VAL_SYMB(*ip) == ';'), *ip, nullptr);
-                (*ip)++;
-                break;
-            }
+            (*ip)++;
+            CheckSyntaxError(IS_VAR(*ip), *ip, nullptr);
+            new_node = NodeCtorCreateVar(VAL_VAR(*ip));
+            (*ip)++;
+            CheckSyntaxError((IS_SYMB(*ip) && VAL_SYMB(*ip) == ';'), *ip, nullptr);
+            (*ip)++;
         }
     }
     
@@ -652,10 +650,8 @@ static Node* GetUnaryFunc(Node** s)
     }
 
     if (IS_OP(*s))
-    {    
-        switch (VAL_OP(*s))
-        {
-        case OP_SQRT:
+    {
+        if (VAL_OP(*s) == OP_SQRT)
         {
             result = NodeCtorOp(OP_SQRT);
             (*s)++;
@@ -666,17 +662,15 @@ static Node* GetUnaryFunc(Node** s)
 
             CheckSyntaxError(IS_SYMB(*s) && VAL_SYMB(*s) == ')', *s, nullptr);
             (*s)++;
-            break;
         }
-        default:
-            break;
-        }
+
         return result;
     }
     
     if (result == nullptr)
         return GetBrackets(s);
 
+    return result;
     #ifdef DEBUG
         printf("end UnaryFunc\n");
     #endif

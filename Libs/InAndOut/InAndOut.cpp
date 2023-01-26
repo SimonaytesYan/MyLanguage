@@ -59,7 +59,7 @@ void PrintElem(FILE* fp, Node* node)
             fprintf(fp, "Type = Unknown\n");
             break;
     }
-    fprintf(fp, "type = %d");
+    fprintf(fp, "type = %d", (int)TYPE(node));
 
     fflush(fp);
 }
