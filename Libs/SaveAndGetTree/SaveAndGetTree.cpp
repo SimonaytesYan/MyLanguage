@@ -18,7 +18,7 @@ int   GetFuncFromTree(Node* node);
 int   SaveNodeInFile(const Node* node, FILE* fp);
 int   FindFunction(const char* func);
 int   FindVar(const char* var);
-int   AddVar(const char* var);
+int   AddVar(char* var);
 
 int SaveTreeInFile(const Tree* tree, const char* path)
 {
@@ -47,8 +47,8 @@ int PutVars(Node* root, FILE* fp)
     StackCtor(&VARS, 0);
     ReturnIfError(GetVarsFromTree(root));
 
-    fprintf(fp, "%d\n", VARS.size);
-    for(int i = 0; i < VARS.size; i++)
+    fprintf(fp, "%lu\n", VARS.size);
+    for(size_t i = 0; i < VARS.size; i++)
         fprintf(fp, "%s\n", VARS.data[i]);
     fprintf(fp, "\n");
     
@@ -60,8 +60,8 @@ int PutFunctions(Node* root, FILE* fp)
     StackCtor(&FUNC, 0);
     ReturnIfError(GetFuncFromTree(root));
 
-    fprintf(fp, "%d\n", FUNC.size);
-    for(int i = 0; i < FUNC.size; i++)
+    fprintf(fp, "%lu\n", FUNC.size);
+    for(size_t i = 0; i < FUNC.size; i++)
         fprintf(fp, "%s\n", FUNC.data[i]);
     fprintf(fp, "\n");
 
@@ -70,7 +70,7 @@ int PutFunctions(Node* root, FILE* fp)
 
 int AddVar(char* var)
 {
-    for(int i = 0; i < VARS.size; i++)
+    for(size_t i = 0; i < VARS.size; i++)
     {
         if (!strcmp(VARS.data[i], var))
             return 0;
@@ -106,11 +106,11 @@ int GetFuncFromTree(Node* node)
 
 int FindFunction(const char* func)
 {
-    int func_length = strlen(func);
-    for(int i = 0; i < FUNC.size; i++)
+    size_t func_length = strlen(func);
+    for(size_t i = 0; i < FUNC.size; i++)
     {
         if (!strncmp(FUNC.data[i], func, func_length))
-            return i;
+            return (int)i;
     }
 
     return -1;
@@ -118,10 +118,10 @@ int FindFunction(const char* func)
 
 int FindVar(const char* var)
 {
-    for(int i = 0; i < VARS.size; i++)
+    for(size_t i = 0; i < VARS.size; i++)
     {
         if (!strcmp(VARS.data[i], var))
-            return i;
+            return (int)i;
     }
 
     return -1;
@@ -158,6 +158,12 @@ int SaveNodeInFile(const Node* node, FILE* fp)
         case TYPE_CREATE_VAR:
             fprintf(fp, " %d %d", TYPE_CREATE_VAR, FindVar(VAL_VAR(node)));
             break;
+        case TYPE_FICT:
+            break;
+        case TYPE_SYMB:
+            break;
+        case UNDEF_NODE_TYPE:
+            break;
         default:
             fprintf(fp, " %d 0", TYPE(node));
     }
@@ -180,6 +186,8 @@ int SaveNodeInFile(const Node* node, FILE* fp)
 
 
 Node* GetNodeFromFile(FILE* fp);
+
+Node* RecognizeNode(int node_type_std, int node_value, FILE* fp);
 
 Node* RecognizeNode(int node_type_std, int node_value, FILE* fp)
 {

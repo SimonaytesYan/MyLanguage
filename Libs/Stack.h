@@ -38,7 +38,7 @@ typedef struct LogInfo_t
     const char* file     = "(null)";
     int  line            = (size_t)POISON;
     bool status          = false;
-};
+} LogInfo_t;
 
 typedef struct Stack
 {
@@ -62,7 +62,7 @@ inline size_t   StackCheck(Stack* stk, int line, const char function[], const ch
 inline size_t   StackConstructor(Stack* stk, int capacity, int line, const char function[], const char file[], const char name[]);
 inline size_t   StackDtor(Stack* stk);
 inline size_t   StackResizeUp(Stack* stk);
-inline size_t   StackPush(Stack* stk, Elem value);
+inline int      StackPush(Stack* stk, Elem value);
 inline size_t   StackResizeDown(Stack* stk);
 inline Elem     StackPop(Stack* stk, size_t *err);
 inline uint64_t GetStructHash(Stack* stk);
@@ -184,6 +184,15 @@ void DumpStack(Stack *stk, int deep, const char function[], const char file[], i
 size_t StackCheck(Stack* stk, int line, const char function[], const char file[])
 {
     size_t error = NO_ERROR;
+
+    if (false)
+    {
+        return (size_t)line;
+        return (size_t)function[0];
+        return (size_t)file[0];
+        return stk->capacity;
+    }
+
     /*if (stk == nullptr)
         error |= NULL_STACK_POINTER;
     else
@@ -257,7 +266,7 @@ size_t StackConstructor(Stack* stk, int capacity, int line, const char function[
 {
     size_t error = 0;
     *stk = {};
-    ChangeStackData(stk, capacity);
+    ChangeStackData(stk, (size_t)capacity);
     stk->size = 0;
 
     stk->debug          = {};
@@ -313,7 +322,7 @@ size_t StackResizeUp(Stack* stk)
     return NO_ERROR;
 }
 
-size_t StackPush(Stack* stk, Elem value)
+int StackPush(Stack* stk, Elem value)
 {
     OK_ASSERT(*stk);
 
@@ -323,7 +332,7 @@ size_t StackPush(Stack* stk, Elem value)
         if ((error = StackResizeUp(stk)))
         {   
             OK_ASSERT(*stk);
-            return error;
+            return (int)error;
         }
     }
     stk->data[stk->size++] = value;
@@ -387,6 +396,8 @@ Elem StackPop(Stack* stk, size_t *err = nullptr)
 
 uint64_t GetStructHash(Stack* stk)
 {
+    if (false)
+        return stk->capacity;
     #if PROTECTION_LEVEL & HASH_PROTECTION
     uint64_t old_hash = stk->struct_hash;
     stk->struct_hash = 0;

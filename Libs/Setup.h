@@ -3,7 +3,7 @@
 
 #include <cstddef>
 
-#define DEBUG
+//#define DEBUG
 
 enum NODE_TYPES
 {
