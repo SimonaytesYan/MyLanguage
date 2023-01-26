@@ -619,6 +619,13 @@ static void NodeDtor(Node* node)
     
     if (node->val.type == TYPE_VAR)
         free(node->val.val.var);
+    else if (node->val.type == TYPE_CREATE_VAR)
+        free(node->val.val.var);
+    else if (node->val.type == TYPE_FUNCTION)
+        free(node->val.val.function);
+    else if (node->val.type == TYPE_CALL)
+        free(node->val.val.function);
+
     free(node);
 }
 

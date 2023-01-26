@@ -228,31 +228,26 @@ static Node* GetFunction(Node** ip)
         CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == '(', *ip, nullptr);
         (*ip)++;
 
-        Node* old_val  = val;
         L(val) = NodeCtorFict();
-        val = L(val);
+        Node* arguments = L(val);
         
         Node* new_node = nullptr;
-        bool  more_arg = false;
         while ((new_node = GetVar(ip)))
         {
-            R(val)  = NodeCtorFict();
-            RL(val) = new_node;
-            val     = R(val);
+            L(arguments)  = NodeCtorFict();
+            R(arguments) = new_node;
+            arguments     = L(arguments);
             if (TYPE(*ip) == TYPE_SYMB && VAL_SYMB(*ip) == ',')
             {
-                more_arg = true;
                 (*ip)++;
                 continue;
             }
-            more_arg = false;
             break;
         }
         
         CheckSyntaxError(IS_SYMB(*ip) && VAL_SYMB(*ip) == ')', *ip, nullptr);
         (*ip)++;
 
-        val = old_val;
         R(val) = GetScope(ip);
     }
 
