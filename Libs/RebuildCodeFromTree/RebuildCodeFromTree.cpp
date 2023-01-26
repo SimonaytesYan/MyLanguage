@@ -42,7 +42,7 @@ int RebuildOperator(Node* node, FILE* fp, int* number_tabs, int* program_block)
         fprintf(fp, "%s", STD_OPERATORS[VAL_OP(node) - 1].name);
         return 0;
     }
-    if (VAL_OP(node) == OP_SQRT || VAL_OP(node) == OP_NOT)
+    if (VAL_OP(node) == OP_SQRT || VAL_OP(node) == OP_NOT || VAL_OP(node) == OP_SIN)
     {
         fprintf(fp, "%s( ", STD_OPERATORS[VAL_OP(node) - 1].name);
         ReturnIfError(RebuildCodeFromNode(R(node), fp, number_tabs, program_block));

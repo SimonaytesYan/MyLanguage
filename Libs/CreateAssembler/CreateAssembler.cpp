@@ -342,7 +342,9 @@ int PutOperator(Node* node, FILE* output_file)
         case OP_SQRT:
             fprintf(output_file, "sqrt\n");
             break;
-
+        case OP_SIN:
+            fprintf(output_file, "sin\n");
+            break;
         case OP_OUT:
         {
             PutNodeInFile(R(node), output_file);

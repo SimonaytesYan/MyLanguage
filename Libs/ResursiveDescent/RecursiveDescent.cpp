@@ -663,6 +663,18 @@ static Node* GetUnaryFunc(Node** s)
             CheckSyntaxError(IS_SYMB(*s) && VAL_SYMB(*s) == ')', *s, nullptr);
             (*s)++;
         }
+        else if (VAL_OP(*s) == OP_SIN)
+        {
+            result = NodeCtorOp(OP_SIN);
+            (*s)++;
+            CheckSyntaxError(IS_SYMB(*s) && VAL_SYMB(*s) == '(', *s, nullptr);
+            (*s)++;
+
+            R(result) = GetBrackets(s);
+
+            CheckSyntaxError(IS_SYMB(*s) && VAL_SYMB(*s) == ')', *s, nullptr);
+            (*s)++;
+        }
 
         return result;
     }

@@ -185,6 +185,13 @@ DEF_CMD(NOT, 30, NO_ARGS,
     PUSH(!a1);
 })
 
+DEF_CMD(SIN, 31, NO_ARGS,
+{
+    Elem a1 = 0;
+    POP(a1);
+    PUSH(sin(a1));
+})
+
 #undef NO_ARGS
 #undef COMMON_ARGS
 #undef JMP_ARGS

@@ -57,6 +57,7 @@ enum OPER_TYPES
     OP_OR           = 16,
     OP_EQ           = 17,
     OP_POW          = 18,
+    OP_SIN          = 100,
 };
 
 struct Keyword_and_stundart_t
@@ -107,7 +108,7 @@ struct Keyword_t
 
 const int MAX_VAR_SIZE      = 20;
 
-const int STD_OPERATORS_NUM = 18;
+const int STD_OPERATORS_NUM = 19;
 
 const Operator_t STD_OPERATORS[] = {
                                     {"+",    OP_PLUS },
@@ -128,6 +129,7 @@ const Operator_t STD_OPERATORS[] = {
                                     {"or",   OP_OR   },
                                     {"=",    OP_EQ   },
                                     {"^",    OP_POW  },
+                                    {"sin",  OP_SIN},
                                    };
 
 const int KEYWORDS_NUM = 11;
