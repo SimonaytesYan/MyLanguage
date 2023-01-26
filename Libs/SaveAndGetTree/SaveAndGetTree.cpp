@@ -155,6 +155,9 @@ int SaveNodeInFile(const Node* node, FILE* fp)
         case TYPE_RETURN:
             fprintf(fp, " %d %d", TYPE_RETURN, 0);
             break;
+        case TYPE_CREATE_VAR:
+            fprintf(fp, " %d %d", TYPE_CREATE_VAR, FindVar(VAL_VAR(node)));
+            break;
         default:
             fprintf(fp, " %d 0", TYPE(node));
     }
@@ -231,7 +234,7 @@ Node* RecognizeNode(int node_type_std, int node_value, FILE* fp)
             return result;
         }
         case 7:                                                 //!CREATE VAR                                            
-            return NodeCtorVar(VARS.data[node_value]);
+            return NodeCtorCreateVar(VARS.data[node_value]);
         case 8:                                                 //!DEF FUNCTION
         {
             Node* result = NodeCtorFunction(FUNC.data[node_value]);
