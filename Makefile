@@ -7,9 +7,7 @@ all: logging recursive_descent in_and_out lexical_analis back_end save_get_tree 
 	g++ main.cpp Obj/LexicalAnalysis.o Obj/Logging.o Obj/RebuildCodeFromTree.o Obj/RecursiveDescent.o Obj/InAndOut.o Obj/Backend.o Obj/SaveAndGetTree.o $(C_FLAGS) -o Exe/Start.exe
 
 run:
-	cd Libs/CPU
-	.\Exe\Comp.exe ..\..\Main.sy
-	Exe/Start.exe a.sy
+	cd Libs/CPU && .\Exe\Comp.exe ../../Main.sy && .\Exe\Start.exe a.sy
 
 rebuild_code:
 	g++ -c Libs/RebuildCodeFromTree/RebuildCodeFromTree.cpp $(C_FLAGS) -o Obj/RebuildCodeFromTree.o
@@ -44,22 +42,3 @@ processor_exe: processor_o logging comand_system
 
 processor_o:
 	g++ -c  Libs/Processor/Processor.cpp -o Obj/Processor.o
-
-
-#linux: differentiator_linux logging_linux recursive_descent_linux simplifying_linux in_and_out_linux
-#	g++ main.cpp Obj/Differentiator.o Obj/Logging.o Obj/ConstructGraphics.o Obj/LatexOutput.o Obj/RecursiveDescent.o Obj/Simplifying.o Obj/TaylorDecomposition.o Obj/InAndOut.o $(C_FLAGS_LINUX) -o Exe/Start.exe
-#
-#in_and_out_linux: recursive_descent_linux latex_output_linux
-#	g++ -c Differentiator/Libs/InAndOut/InAndOut.cpp Obj/RecursiveDescent.o Obj/LatexOutput.o -o Obj/InAndOut.o
-#
-#recursive_descent_linux:
-#	g++ -c Differentiator/Libs/ResursiveDescent/RecursiveDescent.cpp Obj/Differentiator.o Obj/Logging.o $(C_FLAGS_LINUX) -o Obj/RecursiveDescent.o
-#
-#differentiator_linux: latex_output_linux simplifying_linux
-#	g++ -c Differentiator/Differentiator.cpp Obj/LatexOutput.o Obj/Simplifying.o $(C_FLAGS_LINUX) -o Obj/Differentiator.o
-#
-#simplifying_linux: latex_output_linux
-#	g++ -c Differentiator/Libs/Simplifying/Simplifying.cpp Obj/LatexOutput.o $(C_FLAGS_LINUX) -o Obj/Simplifying.o
-#
-#logging_linux:
-#	g++ -c Differentiator/Libs/Logging/Logging.cpp $(C_FLAGS_LINUX) -o Obj/Logging.o
