@@ -117,6 +117,9 @@ const double PRECISION = 1e-6;
         case UNDEF_OPER_TYPE:   \
             fprintf(fp, "?");   \
             break;              \
+        case OP_SIN:            \
+            fprintf(fp, "sin"); \
+            break;              \
         default:                \
             fprintf(fp, "#");   \
             break;              \

@@ -430,8 +430,8 @@ int  PutArgsInCallFunc(Node* node, FILE* output_file)
     
     if (TYPE(node) == TYPE_FICT)
     {
-        ReturnIfError(PutArgsInCallFunc(R(node), output_file));
         ReturnIfError(PutArgsInCallFunc(L(node), output_file));
+        ReturnIfError(PutArgsInCallFunc(R(node), output_file));
     }
     else
         PutNodeInFile(node, output_file);
@@ -523,7 +523,7 @@ int PutReturn(Node* node, FILE* output_file)
 
 int  PutCall(Node* node, FILE* output_file)
 {
-    fprintf(output_file, "\nPUT_ARGS:\n");
+    fprintf(output_file, "\nPUT_ARGS_%s_%d:\n", VAL_FUNC(node), LabelCounter());
     PutArgsInCallFunc(L(node), output_file);
     PutArgsInCallFunc(R(node), output_file);
 
