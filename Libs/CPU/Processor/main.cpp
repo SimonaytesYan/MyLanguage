@@ -2,5 +2,5 @@
 
 int main(int argc, char* argv[])
 {
-    CHECK(ExecProgramFromCL(argc, argv) != 0, "", -1);
+    CHECK(ExecProgramFromCL(argc, argv) != 0, "", -1);    
 }

@@ -1,4 +1,5 @@
 #include "Processor.h"
+#include "../Libs/Logging/Logging.h"
 
 #include <math.h>
 
@@ -202,6 +203,8 @@ int ExecProgramFromCL(int argc, char* argv[])
         return -1;
         
     Run(&cpu);
+    LogPrintf("Execution end successfully\n");
 
     CloseLogFile();
+    return 0;
 }

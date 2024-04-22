@@ -10,7 +10,7 @@ create_dir:
 	mkdir Exe
 	mkDir Obj
 	
-run:
+run: remake_cpu
 	cd Libs/CPU && ./Exe/Comp.exe ../../Main.sy && ./Exe/Start.exe a.sy
 
 rebuild_code:
@@ -34,15 +34,5 @@ lexical_analis:
 logging:
 	g++ -c Libs/Logging/Logging.cpp $(C_FLAGS) -o Obj/Logging.o
 
-
-assembler_exe: assembler_o create_folders logging file_work comand_system
-	g++ Assembler/main.cpp Obj/Assembler.o Obj/ComandSystem.o Obj/Logging.o Obj/FileWork.o $(C_FLAGS) -o Exe/Comp.exe
-
-assembler_o: create_folders logging file_work comand_system
-	g++ -c Assembler/Assembler.cpp -o $(C_FLAGS) Obj/Assembler.o 
-
-processor_exe: processor_o logging comand_system
-	g++ Processor/main.cpp Obj/Processor.o Obj/Logging.o Obj/ComandSystem.o $(C_FLAGS) -o Exe/Start.exe
-
-processor_o:
-	g++ -c  Libs/Processor/Processor.cpp $(C_FLAGS) -o  Obj/Processor.o
+remake_cpu:
+	cd Libs/CPU && make
