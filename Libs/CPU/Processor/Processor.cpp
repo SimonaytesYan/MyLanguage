@@ -185,7 +185,7 @@ int ExecProgramFromCL(int argc, char* argv[])
 {
     CHECK(argv == nullptr, "Argv = nullptr", -1);
 
-    OpenLogFile("Processor/CPULogs.txt");
+    OpenLogFile("Processor/CPULogs.log");
 
     FILE* executable_file = nullptr;
     if (GetExecFileFromCLArgs(&executable_file, argc, argv) != 0)
