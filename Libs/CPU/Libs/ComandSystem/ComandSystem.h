@@ -3,9 +3,9 @@
 
 typedef int Elem;
 
-#include "..\PrintElem.h"
-#include "..\Stack.h"
-#include "..\TXLib.h"
+#include "../PrintElem.h"
+#include "../Stack.h"
+#include "../TXLib.h"
 
 #define BIG_FILE_WORK
 

@@ -11,7 +11,7 @@ create_dir:
 	mkDir Obj
 	
 run:
-	cd Libs/CPU && .\Exe\Comp.exe ../../Main.sy && .\Exe\Start.exe a.sy
+	cd Libs/CPU && ./Exe/Comp.exe ../../Main.sy && ./Exe/Start.exe a.sy
 
 rebuild_code:
 	g++ -c Libs/RebuildCodeFromTree/RebuildCodeFromTree.cpp $(C_FLAGS) -o Obj/RebuildCodeFromTree.o
@@ -26,7 +26,7 @@ recursive_descent: in_and_out
 	g++ -c Libs/ResursiveDescent/RecursiveDescent.cpp Obj/InAndOut.o Obj/Logging.o $(C_FLAGS) -o Obj/RecursiveDescent.o
 
 in_and_out:
-	g++ -c Libs/InAndOut/InAndOut.cpp -o Obj/InAndOut.o
+	g++ -c Libs/InAndOut/InAndOut.cpp $(C_FLAGS) -o Obj/InAndOut.o
 
 lexical_analis:
 	g++ -c Libs/LexicalAnalysis/LexicalAnalysis.cpp $(C_FLAGS) -o Obj/LexicalAnalysis.o
@@ -39,10 +39,10 @@ assembler_exe: assembler_o create_folders logging file_work comand_system
 	g++ Assembler/main.cpp Obj/Assembler.o Obj/ComandSystem.o Obj/Logging.o Obj/FileWork.o $(C_FLAGS) -o Exe/Comp.exe
 
 assembler_o: create_folders logging file_work comand_system
-	g++ -c Assembler/Assembler.cpp -o Obj/Assembler.o 
+	g++ -c Assembler/Assembler.cpp -o $(C_FLAGS) Obj/Assembler.o 
 
 processor_exe: processor_o logging comand_system
-	g++ Processor/main.cpp Obj/Processor.o Obj/Logging.o Obj/ComandSystem.o -o Exe/Start.exe
+	g++ Processor/main.cpp Obj/Processor.o Obj/Logging.o Obj/ComandSystem.o $(C_FLAGS) -o Exe/Start.exe
 
 processor_o:
-	g++ -c  Libs/Processor/Processor.cpp -o Obj/Processor.o
+	g++ -c  Libs/Processor/Processor.cpp $(C_FLAGS) -o  Obj/Processor.o

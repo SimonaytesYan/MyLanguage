@@ -1,7 +1,7 @@
 #ifndef __ASSEMBLER_SYM__
 #define __ASSEMBLER_SYM__
 
-#include "..\Libs\ComandSystem\ComandSystem.h"
+#include "../Libs/ComandSystem/ComandSystem.h"
 
 struct StdArgStruct
 {
