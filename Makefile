@@ -10,8 +10,11 @@ create_dir:
 	mkdir Exe
 	mkDir Obj
 	
-run: remake_cpu
-	cd Libs/CPU && ./Exe/Comp.exe ../../Main.sy && ./Exe/Start.exe a.sy
+run: compile 
+	cd Libs/CPU && ./Exe/Start.exe a.sy
+
+compile: remake_cpu
+	cd Libs/CPU && ./Exe/Comp.exe ../../Main.sy
 
 rebuild_code:
 	g++ -c Libs/RebuildCodeFromTree/RebuildCodeFromTree.cpp $(C_FLAGS) -o Obj/RebuildCodeFromTree.o
