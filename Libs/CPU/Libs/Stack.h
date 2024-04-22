@@ -8,7 +8,7 @@
 #include <cstdint>
 
 #include "Errors.h"
-#include "Logging\Logging.h"
+#include "Logging/Logging.h"
 
 const char StackLogs[] = "StackLogs.txt";
 
