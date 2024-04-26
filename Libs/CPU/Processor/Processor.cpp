@@ -1,5 +1,5 @@
 #include "Processor.h"
-#include "..\Libs\TXLib.h"
+#include "../Libs/Logging/Logging.h"
 
 #include <math.h>
 
@@ -8,7 +8,7 @@
 
 enum COMANDS
 {
-    #include "..\Cmd.h"
+    #include "../Cmd.h"
 };
 
 #undef DEF_CMD
@@ -118,25 +118,25 @@ int GetPopArg(int* arg, int* write_to, int cmd, CPU* cpu)
 
 int DrawRam(CPU* cpu)
 {
-    CHECK(cpu == nullptr, "Cpu == nullptr\n", -1);
-    RGBQUAD* buf = txVideoMemory();
-
-    for(size_t i = 0; i < WINDOW_WIDTH; ++i)
-    {
-        for(int j = 0; j < WINDOW_HIGHT; ++j)
-        {
-            int index = i*WINDOW_HIGHT + j;
-            int val   = cpu->ram[index];
-            
-            RGBQUAD rgb = { (BYTE) (val & FI_BYTE),
-                            (BYTE)((val >> 8) & FI_BYTE),
-                            (BYTE)((val >> 16) & FI_BYTE) };
-
-            buf[i + (WINDOW_HIGHT - j)*WINDOW_WIDTH] = rgb;
-        }
-    }
-    //Sleep(16);
-    txRedrawWindow();
+    // CHECK(cpu == nullptr, "Cpu == nullptr\n", -1);
+    // RGBQUAD* buf = txVideoMemory();
+// 
+    // for(size_t i = 0; i < WINDOW_WIDTH; ++i)
+    // {
+        // for(int j = 0; j < WINDOW_HIGHT; ++j)
+        // {
+            // int index = i*WINDOW_HIGHT + j;
+            // int val   = cpu->ram[index];
+            // 
+            // RGBQUAD rgb = { (BYTE) (val & FI_BYTE),
+                            // (BYTE)((val >> 8) & FI_BYTE),
+                            // (BYTE)((val >> 16) & FI_BYTE) };
+// 
+            // buf[i + (WINDOW_HIGHT - j)*WINDOW_WIDTH] = rgb;
+        // }
+    // }
+    // Sleep(16);
+    // txRedrawWindow();
 
     return 0;
 }
@@ -163,7 +163,7 @@ void Run(CPU* cpu)
 
         switch(cmd & CMD_MASK)
         {   
-            #include "..\Cmd.h"
+            #include "../Cmd.h"
             default:
                 LogPrintf("\nWrong comand\n");
             break;
@@ -173,8 +173,8 @@ void Run(CPU* cpu)
 
 int InitTXLib()
 {   
-    txBegin();
-    CHECK(txCreateWindow(WINDOW_WIDTH, WINDOW_HIGHT, true) == nullptr, "Error during creating windows to draw", -1);
+    // txBegin();
+    // CHECK(txCreateWindow(WINDOW_WIDTH, WINDOW_HIGHT, true) == nullptr, "Error during creating windows to draw", -1);
 
     return 0;
 }
@@ -186,7 +186,7 @@ int ExecProgramFromCL(int argc, char* argv[])
 {
     CHECK(argv == nullptr, "Argv = nullptr", -1);
 
-    OpenLogFile("Processor/CPULogs.txt");
+    OpenLogFile("Processor/CPULogs.log");
 
     FILE* executable_file = nullptr;
     if (GetExecFileFromCLArgs(&executable_file, argc, argv) != 0)
@@ -203,6 +203,8 @@ int ExecProgramFromCL(int argc, char* argv[])
         return -1;
         
     Run(&cpu);
+    LogPrintf("Execution end successfully\n");
 
     CloseLogFile();
+    return 0;
 }

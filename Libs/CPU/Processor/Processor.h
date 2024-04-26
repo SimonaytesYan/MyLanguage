@@ -3,8 +3,8 @@
 
 #define LOGS_TO_FILE
 
-#include "..\Libs\Logging\Logging.h"
-#include "..\Libs\ComandSystem\ComandSystem.h"
+#include "../Libs/Logging/Logging.h"
+#include "../Libs/ComandSystem/ComandSystem.h"
 
 int  GetExecFileFromCLArgs(FILE** fp, int argc, char* argv[]);
 

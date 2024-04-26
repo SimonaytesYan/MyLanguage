@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
-#include <sys\stat.h>
+#include <sys/stat.h>
 
 #include "FileWork.h"
 #include "../Strings/_Strings.h"

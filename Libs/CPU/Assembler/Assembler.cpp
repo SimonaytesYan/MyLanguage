@@ -15,7 +15,7 @@ typedef int Elem;
 
 enum COMANDS
 {
-    #include "..\Cmd.h"
+    #include "../Cmd.h"
 };
 
 #undef DEF_CMD
@@ -104,13 +104,13 @@ int ArgToInt(char* char_arg, int* comand, int* arg, int line)
         CHECK_SYNTAX((*comand & ARG_REG) != 0, "Wrong  args\n", -1, line);
         *comand |= ARG_REG;
         
-        if (stricmp(char_arg, "rax") == 0)
+        if (strcasecmp(char_arg, "rax") == 0)
             *arg = RAX;
-        else if (stricmp(char_arg, "rbx") == 0)
+        else if (strcasecmp(char_arg, "rbx") == 0)
             *arg = RBX;
-        else if (stricmp(char_arg, "rcx") == 0)
+        else if (strcasecmp(char_arg, "rcx") == 0)
             *arg = RCX;
-        else if (stricmp(char_arg, "rdx") == 0)
+        else if (strcasecmp(char_arg, "rdx") == 0)
             *arg = RDX;
         else
             CHECK_SYNTAX(1, "Wrong register name\n", -1, line);
@@ -194,7 +194,7 @@ int FindLabel(Label* labels, char* name, int* index)
 {
     for(size_t i = 0; i < MAX_LABELS; i++)
     {
-        if (stricmp(name, labels[i].name) == 0)
+        if (strcasecmp(name, labels[i].name) == 0)
         {
             *index = i; 
             return 0;
@@ -216,7 +216,7 @@ int AddLabel(char* arg, Label* labels, int cmd_index, int line)
     int i = 0;
     for(i = 0; i < MAX_LABELS; i++)
     {
-        if (stricmp(arg, labels[i].name) == 0)
+        if (strcasecmp(arg, labels[i].name) == 0)
             return 0;
         if (strlen(labels[i].name) == 0)
             break;
@@ -258,7 +258,7 @@ int PutJmpArgsAndCmdInArray(StdArgStruct* f_args,int comp_number, const char** t
 }
 
 #define DEF_CMD(name, num, arg, ...)                                                            \
-    if (stricmp(cmd, #name) == 0)                                                               \
+    if (strcasecmp(cmd, #name) == 0)                                                               \
     {                                                                                           \
         if (arg == COMMON_ARGS)                                                                 \
         {                                                                                       \
@@ -303,13 +303,14 @@ int Compilation(int** comands, int* number_comand, Label* labels, int number_lin
         if (strlen(cmd) == 0)
             continue;
 
-        #include "..\Cmd.h"
+        #include "../Cmd.h"
         /*else*/
         {
             if (cmd[strlen(cmd) - 1] == ':')
                 AddLabel(cmd, labels, comand_index, line + 1);
             else
             {
+                LogPrintf("cmd[strlen(cmd) - 1] = %c(%d)\n", cmd[strlen(cmd) - 1], cmd[strlen(cmd) - 1]);
                 LogPrintf("Wrong comand in line %d\n", line + 1);
                 return -1;
             }
@@ -346,7 +347,7 @@ int CompileProgramFromCL(int argc, char* argv[])
     CHECK(argv == nullptr, "\nArgv damaged\n",                  -1);
     CHECK(argc != 2,       "\nWrong number of cmd arguments\n", -1);
 
-    CHECK(OpenLogFile("Assembler/AssLogs.txt") != 0, "Error while logs open\n", -1);
+    CHECK(OpenLogFile("Assembler/AssLogs.log") != 0, "Error while logs open\n", -1);
 
     const char* code_file_name = argv[1];
 

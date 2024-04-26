@@ -1,6 +1,6 @@
 #include "ComandSystem.h"
 
-#include "..\Logging\Logging.h"
+#include "../Logging/Logging.h"
 
 int InitHeader(Header* header, int comands_number)
 {

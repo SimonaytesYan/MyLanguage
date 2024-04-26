@@ -4,14 +4,17 @@ C_FLAGS   = -D _DEBUG -ggdb3 -std=c++2a -O0 -Wall -Wextra -Weffc++ -Waggressive-
 #C_FLAGS = -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Weffc++ -Wmain -Wextra -Wall -g -pipe -fexceptions -Wcast-qual -Wconversion -Wctor-dtor-privacy -Wempty-body -Wformat-security -Wformat=2 -Wignored-qualifiers -Wlogical-op -Wno-missing-field-initializers -Wnon-virtual-dtor -Woverloaded-virtual -Wpointer-arith -Wsign-promo -Wstack-usage=8192 -Wstrict-aliasing -Wstrict-null-sentinel -Wtype-limits -Wwrite-strings -Werror=vla -D_DEBUG -D_EJUDGE_CLIENT_SIDE
 
 all: logging recursive_descent in_and_out lexical_analis back_end save_get_tree rebuild_code
-	g++ main.cpp Obj/LexicalAnalysis.o Obj/Logging.o Obj/RebuildCodeFromTree.o Obj/RecursiveDescent.o Obj/InAndOut.o Obj/Backend.o Obj/SaveAndGetTree.o $(C_FLAGS) -o Exe/Start.exe
+	g++ $(C_FLAGS) main.cpp Obj/LexicalAnalysis.o Obj/Logging.o Obj/RebuildCodeFromTree.o Obj/RecursiveDescent.o Obj/InAndOut.o Obj/Backend.o Obj/SaveAndGetTree.o $(C_FLAGS) -o Exe/Start.exe
 
 create_dir:
 	mkdir Exe
 	mkDir Obj
 	
-run:
-	cd Libs/CPU && .\Exe\Comp.exe ../../Main.sy && .\Exe\Start.exe a.sy
+run: compile 
+	cd Libs/CPU && ./Exe/Start.exe a.sy
+
+compile: remake_cpu
+	cd Libs/CPU && ./Exe/Comp.exe ../../Main.sy
 
 rebuild_code:
 	g++ -c Libs/RebuildCodeFromTree/RebuildCodeFromTree.cpp $(C_FLAGS) -o Obj/RebuildCodeFromTree.o
@@ -26,7 +29,7 @@ recursive_descent: in_and_out
 	g++ -c Libs/ResursiveDescent/RecursiveDescent.cpp Obj/InAndOut.o Obj/Logging.o $(C_FLAGS) -o Obj/RecursiveDescent.o
 
 in_and_out:
-	g++ -c Libs/InAndOut/InAndOut.cpp -o Obj/InAndOut.o
+	g++ -c Libs/InAndOut/InAndOut.cpp $(C_FLAGS) -o Obj/InAndOut.o
 
 lexical_analis:
 	g++ -c Libs/LexicalAnalysis/LexicalAnalysis.cpp $(C_FLAGS) -o Obj/LexicalAnalysis.o
@@ -34,15 +37,5 @@ lexical_analis:
 logging:
 	g++ -c Libs/Logging/Logging.cpp $(C_FLAGS) -o Obj/Logging.o
 
-
-assembler_exe: assembler_o create_folders logging file_work comand_system
-	g++ Assembler/main.cpp Obj/Assembler.o Obj/ComandSystem.o Obj/Logging.o Obj/FileWork.o $(C_FLAGS) -o Exe/Comp.exe
-
-assembler_o: create_folders logging file_work comand_system
-	g++ -c Assembler/Assembler.cpp -o Obj/Assembler.o 
-
-processor_exe: processor_o logging comand_system
-	g++ Processor/main.cpp Obj/Processor.o Obj/Logging.o Obj/ComandSystem.o -o Exe/Start.exe
-
-processor_o:
-	g++ -c  Libs/Processor/Processor.cpp -o Obj/Processor.o
+remake_cpu:
+	cd Libs/CPU && make

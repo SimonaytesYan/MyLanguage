@@ -1,5 +1,9 @@
 {
     "files.associations": {
+        "*.s": "nasm",
+        "ChangeLog": "plaintext",
+        "*.md": "markdown",
+        "*.h": "cpp",
         "*.sym": "pascal",
         "sstream": "cpp",
         "vector": "cpp",
@@ -7,8 +11,6 @@
         "xutility": "cpp",
         "system_error": "cpp",
         "xlocale": "cpp",
-        "array": "cpp",
-        "string": "cpp",
-        "string_view": "cpp"
+        "cstdint": "cpp"
     }
 }
