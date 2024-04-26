@@ -13,7 +13,8 @@ create_dir:
 run: compile 
 	cd Libs/CPU && ./Exe/Start.exe a.sy
 
-compile: remake_cpu
+compile: all remake_cpu
+	./Exe/Start.exe -m 0 -p $(FILE)
 	cd Libs/CPU && ./Exe/Comp.exe ../../Main.sy
 
 rebuild_code:
