@@ -2,8 +2,6 @@ flags = -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equa
 all: create_folders logging assembler_exe processor_exe file_work
 	echo Successfully make
 
-create_folders:
-
 assembler_exe: assembler_o create_folders logging file_work comand_system
 	g++ Assembler/main.cpp Obj/Assembler.o Obj/ComandSystem.o Obj/Logging.o Obj/FileWork.o $(flags) -o Exe/Comp.exe
 
@@ -32,3 +30,7 @@ logging: create_folders
 
 comand_system: create_folders
 	g++ -c Libs/ComandSystem/ComandSystem.cpp -o Obj/ComandSystem.o
+	
+create_folders:
+	-mkdir Obj
+	-mkdir Exe
