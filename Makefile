@@ -8,7 +8,7 @@ all: create_dir logging recursive_descent in_and_out lexical_analis back_end sav
 
 create_dir:
 	-mkdir Exe
-	-mkDir Obj
+	-mkdir Obj
 	
 run: compile create_dir
 	cd Libs/CPU && ./Exe/Start.exe a.sy
