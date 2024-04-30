@@ -45,8 +45,10 @@ int main(int argc, const char* argv[])
         TreeCtor(&lang_tree);
 
         ReturnIfError(MakeTreeFromComands(&lang_tree, program.comands, program.comands_num));
-
-        GraphicDump(&lang_tree);
+        
+        #ifdef DEBUG
+            GraphicDump(&lang_tree);
+        #endif
 
         SaveTreeInFile(&lang_tree, TREE_PATH);
 
@@ -62,8 +64,10 @@ int main(int argc, const char* argv[])
         TreeCtor(&lang_tree);
 
         ReturnIfError(GetTreeFromFile(&lang_tree, path));
-
-        GraphicDump(&lang_tree);
+        
+        #ifdef DEBUG
+            GraphicDump(&lang_tree);
+        #endif
 
         ReturnIfError(CreateAsmFromTree(&lang_tree, ASM_FILE_NAME));
 

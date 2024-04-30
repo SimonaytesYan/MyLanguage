@@ -4,7 +4,7 @@ typedef char* Elem;
 
 #include "../Stack.h"
 
-#define DEBUG
+// #define DEBUG
 
 const int MAX_NUMBER_LENGHT = 10;
 
