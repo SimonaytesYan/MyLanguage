@@ -15,7 +15,7 @@ create_dir:
 run: compile create_dir
 	cd Libs/CPU && ./Exe/Start.exe a.sy
 
-compile: all remake_cpu create_dir
+compile: create_dir
 	./Exe/Start.exe -m 0 -p $(FILE)
 	cd Libs/CPU && ./Exe/Comp.exe ../../Main.sy
 
