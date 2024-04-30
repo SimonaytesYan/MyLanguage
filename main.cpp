@@ -39,7 +39,9 @@ int main(int argc, const char* argv[])
         Program_t program = {};
         program.comands = GetProgramFromFile(path, &program.comands_num);
 
-        GraphicDumpComands(program);
+        #ifdef DEBUG
+            GraphicDumpComands(program);
+        #endif
 
         Tree lang_tree = {};
         TreeCtor(&lang_tree);
