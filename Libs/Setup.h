@@ -111,13 +111,13 @@ const int MAX_VAR_SIZE      = 20;
 const int STD_OPERATORS_NUM = 19;
 
 const Operator_t STD_OPERATORS[] = {
-                                    {"дуговой",    OP_PLUS },
-                                    {"реверс",    OP_SUB  },
-                                    {"отхват",    OP_MUL  },
-                                    {"зацеп",    OP_DIV  },
-                                    {"эскимосский", OP_SQRT},
-                                    {"улово",   OP_IN   },
-                                    {"струя",  OP_OUT  },
+                                    {"+",    OP_PLUS },
+                                    {"-",    OP_SUB  },
+                                    {"*",    OP_MUL  },
+                                    {"/",    OP_DIV  },
+                                    {"sqrt", OP_SQRT},
+                                    {"in",   OP_IN   },
+                                    {"out",  OP_OUT  },
                                     {"==",   OP_IS_EQ},
                                     {">",    OP_IS_B },
                                     {"<",    OP_IS_S },
@@ -127,7 +127,7 @@ const Operator_t STD_OPERATORS[] = {
                                     {"!",    OP_NOT},
                                     {"and",  OP_AND  },
                                     {"or",   OP_OR   },
-                                    {"крен",    OP_EQ   },
+                                    {"=",    OP_EQ   },
                                     {"^",    OP_POW  },
                                     {"sin",  OP_SIN},
                                    };
@@ -135,17 +135,17 @@ const Operator_t STD_OPERATORS[] = {
 const int KEYWORDS_NUM = 11;
 
 const Keyword_t KEYWORDS[] = {
-                                {"камень",         KEYWORD_VAR},
-                                {"вал",            KEYWORD_IF},
-                                {"серфить",        KEYWORD_THEN},
-                                {"траверс",        KEYWORD_ELSE},
-                                {"зашёл_в_ворота", KEYWORD_BEGIN},
-                                {"вышел_из_ворот", KEYWORD_END},
-                                {"бочка",          KEYWORD_WHILE},
-                                {"вариться",       KEYWORD_DO},
-                                {"тренировка",     KEYWORD_FUNCTION},
-                                {"крикнуть",       KEYWORD_RETURN},
-                                {"вспомнить",      KEYWORD_CALL},
+                                {"var",         KEYWORD_VAR},
+                                {"is",            KEYWORD_IF},
+                                {"then",        KEYWORD_THEN},
+                                {"else",        KEYWORD_ELSE},
+                                {"begin", KEYWORD_BEGIN},
+                                {"end", KEYWORD_END},
+                                {"while",          KEYWORD_WHILE},
+                                {"do",       KEYWORD_DO},
+                                {"function",     KEYWORD_FUNCTION},
+                                {"return",       KEYWORD_RETURN},
+                                {"call",      KEYWORD_CALL},
                              };
 
 void PrintElemInLog(Node_t elem);
