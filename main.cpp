@@ -131,6 +131,11 @@ int GetFlagsFromCML(int argc, const char* argv[], int* operation_mode, char** pa
 
     printf("op_mode = %d\n", *operation_mode);
     printf("path    = %s\n", *path);
+
+    char command[255] = {};
+    sprintf(command, "cat %s", path);
+    system(command);
+
     return 0;
 }
 
