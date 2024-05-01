@@ -135,17 +135,17 @@ const Operator_t STD_OPERATORS[] = {
 const int KEYWORDS_NUM = 11;
 
 const Keyword_t KEYWORDS[] = {
-                                {"var",         KEYWORD_VAR},
-                                {"is",            KEYWORD_IF},
-                                {"then",        KEYWORD_THEN},
-                                {"else",        KEYWORD_ELSE},
-                                {"begin", KEYWORD_BEGIN},
-                                {"end", KEYWORD_END},
-                                {"while",          KEYWORD_WHILE},
+                                {"var",      KEYWORD_VAR},
+                                {"if",       KEYWORD_IF},
+                                {"then",     KEYWORD_THEN},
+                                {"else",     KEYWORD_ELSE},
+                                {"begin",    KEYWORD_BEGIN},
+                                {"end",      KEYWORD_END},
+                                {"while",    KEYWORD_WHILE},
                                 {"do",       KEYWORD_DO},
-                                {"function",     KEYWORD_FUNCTION},
-                                {"return",       KEYWORD_RETURN},
-                                {"call",      KEYWORD_CALL},
+                                {"function", KEYWORD_FUNCTION},
+                                {"return",   KEYWORD_RETURN},
+                                {"call",     KEYWORD_CALL},
                              };
 
 void PrintElemInLog(Node_t elem);
