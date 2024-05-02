@@ -192,6 +192,16 @@ DEF_CMD(SIN, 31, NO_ARGS,
     PUSH(sin(a1));
 })
 
+DEF_CMD(BUILD_CELL, 32, NO_ARGS,
+{
+    // DO NOTHING
+})
+
+DEF_CMD(GET_CELL, 33, NO_ARGS,
+{
+    // DO NOTHING
+})
+
 #undef NO_ARGS
 #undef COMMON_ARGS
 #undef JMP_ARGS

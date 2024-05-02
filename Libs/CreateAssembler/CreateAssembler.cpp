@@ -521,6 +521,19 @@ int PutReturn(Node* node, FILE* output_file)
     return 0;
 }
 
+int CalcArgsNumber(Node* node)
+{
+    if (node == nullptr)
+        return 0;
+    
+    size_t arg_num = 0;
+    if (TYPE(node) == TYPE_VAR)
+        arg_num++;
+    arg_num += CalcArgsNumber(L(node)) + CalcArgsNumber(R(node));
+    
+    return arg_num;
+}
+
 int  PutCall(Node* node, FILE* output_file)
 {
     fprintf(output_file, "\nPUT_ARGS_%s_%d:\n", VAL_FUNC(node), LabelCounter());
@@ -533,7 +546,20 @@ int  PutCall(Node* node, FILE* output_file)
     fprintf(output_file, "add\n");
     fprintf(output_file, "pop rdx\n");
 
-    fprintf(output_file, "call label%d\n", GetFuncIndex(VAL_FUNC(node)));
+    if (strcmp(VAL_FUNC(node), "get_cell") == 0)
+    {
+        if (CalcArgsNumber(node) != 2)
+            return -1;
+        fprintf(output_file, "get_cell\n");
+    }
+    else if (strcmp(VAL_FUNC(node), "build_cell") == 0)
+    {
+        if (CalcArgsNumber(node) != 3)
+            return -1;
+        fprintf(output_file, "build_cell\n");
+    }
+    else
+        fprintf(output_file, "call label%d\n", GetFuncIndex(VAL_FUNC(node)));
 
     fprintf(output_file, "push rdx\n");
     fprintf(output_file, "push %d\n", offset_change);
