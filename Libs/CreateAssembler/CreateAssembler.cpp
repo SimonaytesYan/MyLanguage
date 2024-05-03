@@ -548,12 +548,14 @@ int  PutCall(Node* node, FILE* output_file)
 
     if (strcmp(VAL_FUNC(node), "get_cell") == 0)
     {
+        assert(CalcArgsNumber(node) == 2);
         if (CalcArgsNumber(node) != 2)
             return -1;
         fprintf(output_file, "get_cell\n");
     }
     else if (strcmp(VAL_FUNC(node), "build_cell") == 0)
     {
+        assert(CalcArgsNumber(node) == 3);
         if (CalcArgsNumber(node) != 3)
             return -1;
         fprintf(output_file, "build_cell\n");
