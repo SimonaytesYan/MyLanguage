@@ -202,6 +202,11 @@ DEF_CMD(GET_CELL, 33, NO_ARGS,
     // DO NOTHING
 })
 
+DEF_CMD(LOAD_RESOURCES, 34, NO_ARGS,
+{
+    // DO NOTHING
+})
+
 #undef NO_ARGS
 #undef COMMON_ARGS
 #undef JMP_ARGS

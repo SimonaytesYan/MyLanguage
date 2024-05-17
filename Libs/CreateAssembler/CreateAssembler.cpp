@@ -553,6 +553,10 @@ int  PutCall(Node* node, FILE* output_file)
         //     return -1;
         fprintf(output_file, "get_cell\n");
     }
+    else if (strcmp(VAL_FUNC(node), "load_resources"))
+    {
+        fprintf(output_file, "load_resources\n");
+    }
     else if (strcmp(VAL_FUNC(node), "build_cell") == 0)
     {
         // assert(CalcArgsNumber(node) == 3);
